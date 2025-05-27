@@ -110,7 +110,7 @@ export default function ProgressPage() {
               />
             </Box>
             <Typography variant="body2" color="text.secondary">
-              You've completed {progress.totalEntries} entries across {progress.categoriesActive} categories. 
+              You&apos;ve completed {progress.totalEntries} entries across {progress.categoriesActive} categories. 
               Keep up the great work!
             </Typography>
           </CardContent>

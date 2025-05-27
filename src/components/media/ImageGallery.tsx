@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import {
   Box,
   Typography,
@@ -276,15 +277,13 @@ export default function ImageGallery({
             <Close />
           </IconButton>
         </DialogTitle>
-        <DialogContent sx={{ p: 0 }}>
+        <DialogContent sx={{ p: 0, position: 'relative', minHeight: '400px' }}>
           {selectedImage && (
-            <img
+            <Image
               src={selectedImage.url}
               alt={selectedImage.name}
+              fill
               style={{
-                width: '100%',
-                height: 'auto',
-                maxHeight: '80vh',
                 objectFit: 'contain'
               }}
             />

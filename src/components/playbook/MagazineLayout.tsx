@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import Image from 'next/image';
 import {
   Box,
   Typography,
@@ -168,12 +169,11 @@ export default function MagazineLayout({ sections, userName = 'Your', userDispla
                 border: '3px solid white',
               }}
             >
-              <img
+              <Image
                 src={backgroundImages[0].url}
                 alt={backgroundImages[0].caption || backgroundImages[0].name}
+                fill
                 style={{
-                  width: '100%',
-                  height: '100%',
                   objectFit: 'cover'
                 }}
               />
@@ -197,12 +197,11 @@ export default function MagazineLayout({ sections, userName = 'Your', userDispla
                 border: '3px solid white',
               }}
             >
-              <img
+              <Image
                 src={backgroundImages[1].url}
                 alt={backgroundImages[1].caption || backgroundImages[1].name}
+                fill
                 style={{
-                  width: '100%',
-                  height: '100%',
                   objectFit: 'cover'
                 }}
               />
@@ -226,12 +225,11 @@ export default function MagazineLayout({ sections, userName = 'Your', userDispla
                 border: '2px solid white',
               }}
             >
-              <img
+              <Image
                 src={backgroundImages[2].url}
                 alt={backgroundImages[2].caption || backgroundImages[2].name}
+                fill
                 style={{
-                  width: '100%',
-                  height: '100%',
                   objectFit: 'cover'
                 }}
               />
@@ -255,12 +253,11 @@ export default function MagazineLayout({ sections, userName = 'Your', userDispla
                 border: '2px solid white',
               }}
             >
-              <img
+              <Image
                 src={backgroundImages[3].url}
                 alt={backgroundImages[3].caption || backgroundImages[3].name}
+                fill
                 style={{
-                  width: '100%',
-                  height: '100%',
                   objectFit: 'cover'
                 }}
               />
