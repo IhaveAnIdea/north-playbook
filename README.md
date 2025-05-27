@@ -1,43 +1,56 @@
-# North Playbook - Personal Development Platform
+# North Playbook
 
-A comprehensive NextJS application powered by AWS Amplify Gen 2 that helps users create their personal development journey through AI-powered insights, guided exercises, and beautiful storytelling.
+A comprehensive personal development application built with Next.js 15, AWS Amplify Gen 2, and Material-UI. Track your growth journey through interactive exercises, maintain a beautiful digital playbook, and gain AI-powered insights into your development patterns.
 
 ## 🌟 Features
 
-- **User Authentication**: Secure signup/login with AWS Cognito
-- **Personal Development Exercises**: Guided exercises covering mindset, motivation, goals, reflection, gratitude, and vision
-- **Multi-Media Support**: Upload text, audio, and video responses
-- **AI-Powered Analysis**: Claude AI analyzes responses for personalized insights
-- **Beautiful Playbook**: Magazine-style digital playbook of your journey
-- **PDF Export**: Download your complete playbook as a beautiful PDF
-- **Progress Tracking**: Monitor growth and insights over time
-- **Responsive Design**: Modern, beautiful UI with Material Design
-- **AWS Integration**: Fully hosted on AWS with Amplify Gen 2
+### 📚 Exercise System
+- **8 Comprehensive Exercises** across 6 development categories
+- **Interactive Responses**: Text, audio, and video submissions
+- **Progress Tracking**: Monitor completion and growth over time
+- **Preview Modals**: Quick exercise overview before starting
+
+### 📖 Digital Playbook
+- **Multiple View Modes**: Timeline, category-based, and magazine layouts
+- **Rich Media Support**: Images, audio, and video integration
+- **AI-Generated Insights**: Personalized analysis of your entries
+- **PDF Export**: Download your complete development story
+- **Magazine-Style Layout**: Professional, visually stunning presentation
+
+### 📊 Progress & Analytics
+- **Progress Tracking**: Visual progress bars and completion statistics
+- **AI Insights**: Personalized recommendations and pattern analysis
+- **Category Analysis**: Deep dive into each development area
+- **Activity Timeline**: Track your development journey over time
+
+### 🎨 Modern UI/UX
+- **Material-UI Design**: Clean, professional interface
+- **Responsive Layout**: Works perfectly on all devices
+- **Dark/Light Themes**: Customizable appearance
+- **Smooth Animations**: Engaging user experience
 
 ## 🚀 Tech Stack
 
-- **Frontend**: Next.js 15, React 19, TypeScript
-- **UI Framework**: Material-UI (MUI) with custom North branding
-- **Backend**: AWS Amplify Gen 2
-- **Authentication**: AWS Cognito
-- **Database**: AWS DynamoDB (via Amplify Data)
-- **Storage**: AWS S3 (via Amplify Storage)
-- **AI Integration**: Claude AI for response analysis
-- **Deployment**: AWS Amplify Hosting
+- **Frontend**: Next.js 15 with React 19 and TypeScript
+- **Backend**: AWS Amplify Gen 2 with Cognito authentication
+- **UI Framework**: Material-UI (MUI) v6
+- **Styling**: Emotion CSS-in-JS
+- **Media Handling**: Custom audio/video players with full controls
+- **PDF Generation**: React-to-print for export functionality
+- **Image Management**: Drag-and-drop upload with preview galleries
 
-## 🛠️ Local Development Setup
+## 🛠️ Installation & Setup
 
 ### Prerequisites
-
 - Node.js 18+ and npm
-- AWS CLI configured with appropriate permissions
-- Git
+- AWS CLI configured
+- AWS Amplify CLI
 
-### Installation
+### Local Development
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/IhaveAnIdea/north-playbook.git
    cd north-playbook
    ```
 
@@ -48,14 +61,13 @@ A comprehensive NextJS application powered by AWS Amplify Gen 2 that helps users
 
 3. **Configure AWS Amplify**
    ```bash
-   # Initialize Amplify (if not already done)
-   npx @aws-amplify/backend-cli@latest generate schema --yes
+   # If you have an existing Cognito user pool
+   aws cognito-idp describe-user-pool --user-pool-id YOUR_USER_POOL_ID
    
-   # Deploy the backend
-   npx @aws-amplify/backend-cli@latest deploy
+   # Update amplify-outputs.json with your configuration
    ```
 
-4. **Start the development server**
+4. **Start development server**
    ```bash
    npm run dev
    ```
@@ -63,99 +75,112 @@ A comprehensive NextJS application powered by AWS Amplify Gen 2 that helps users
 5. **Open your browser**
    Navigate to `http://localhost:3000`
 
+## 🌐 Deployment
+
+### Deploy to AWS Amplify
+
+1. **Connect to GitHub**
+   - Go to [AWS Amplify Console](https://console.aws.amazon.com/amplify/)
+   - Click "New app" → "Host web app"
+   - Connect your GitHub repository
+
+2. **Configure Build Settings**
+   ```yaml
+   version: 1
+   frontend:
+     phases:
+       preBuild:
+         commands:
+           - npm ci
+       build:
+         commands:
+           - npm run build
+     artifacts:
+       baseDirectory: .next
+       files:
+         - '**/*'
+     cache:
+       paths:
+         - node_modules/**/*
+         - .next/cache/**/*
+   ```
+
+3. **Environment Variables**
+   Set up the following environment variables in Amplify:
+   - `NEXT_PUBLIC_AWS_REGION`: Your AWS region
+   - `NEXT_PUBLIC_USER_POOL_ID`: Your Cognito User Pool ID
+   - `NEXT_PUBLIC_USER_POOL_CLIENT_ID`: Your Cognito App Client ID
+
+4. **Deploy**
+   - Save and deploy
+   - Your app will be available at the provided Amplify URL
+
 ## 📁 Project Structure
 
 ```
 north-playbook/
-├── amplify/                 # AWS Amplify Gen 2 backend configuration
-│   ├── auth/               # Authentication configuration
-│   ├── data/               # Database schema and API
-│   ├── storage/            # S3 storage configuration
-│   └── backend.ts          # Main backend configuration
 ├── src/
-│   ├── app/                # Next.js app router pages
-│   │   ├── auth/           # Authentication page
-│   │   ├── dashboard/      # User dashboard
-│   │   ├── exercises/      # Exercise listing and individual exercises
-│   │   ├── playbook/       # Personal playbook view
-│   │   └── page.tsx        # Landing page
-│   ├── components/         # Reusable React components
-│   │   ├── layout/         # Navigation and layout components
-│   │   └── providers/      # Context providers
-│   └── lib/                # Utility functions and configurations
-├── public/                 # Static assets
-└── package.json           # Dependencies and scripts
+│   ├── app/                    # Next.js 15 app router
+│   │   ├── auth/              # Authentication pages
+│   │   ├── dashboard/         # Main dashboard
+│   │   ├── exercises/         # Exercise system
+│   │   ├── playbook/          # Digital playbook
+│   │   ├── progress/          # Progress tracking
+│   │   ├── insights/          # AI insights
+│   │   ├── profile/           # User profile
+│   │   └── settings/          # App settings
+│   ├── components/            # Reusable React components
+│   │   ├── exercises/         # Exercise-related components
+│   │   ├── layout/            # Layout components
+│   │   ├── media/             # Media handling components
+│   │   └── playbook/          # Playbook components
+│   ├── data/                  # Sample data and types
+│   └── lib/                   # Utility functions and configs
+├── amplify/                   # AWS Amplify configuration
+└── public/                    # Static assets
 ```
 
-## 🎨 Key Components
+## 🎯 Key Features Breakdown
 
-### Authentication
-- Secure user registration and login
-- Profile management with user attributes
-- Protected routes for authenticated users
+### Exercise Categories
+1. **Mindset**: Cognitive reframing and mental models
+2. **Motivation**: Goal setting and drive enhancement
+3. **Goals**: Strategic planning and achievement tracking
+4. **Reflection**: Self-awareness and introspection
+5. **Gratitude**: Appreciation and positive psychology
+6. **Vision**: Future planning and aspiration setting
 
-### Exercises System
-- Categorized personal development exercises
-- Support for text, audio, and video responses
-- Progress tracking and completion status
+### Playbook Views
+- **Timeline View**: Chronological journey through your development
+- **Category View**: Organized by development areas
+- **Magazine View**: Professional, publication-style layout with:
+  - Cover page with featured images
+  - Multi-column text layouts
+  - Integrated media players
+  - AI insights and analysis
 
-### AI Integration
-- Claude AI analysis of user responses
-- Personalized insights and recommendations
-- Mood and sentiment analysis
-
-### Playbook Generation
-- Beautiful magazine-style layout
-- PDF export functionality
-- Shareable personal development stories
-
-## 🚀 Deployment
-
-### AWS Amplify Hosting
-
-1. **Connect your repository to Amplify**
-   ```bash
-   # Using Amplify CLI
-   amplify init
-   amplify add hosting
-   amplify publish
-   ```
-
-2. **Or deploy via AWS Console**
-   - Go to AWS Amplify Console
-   - Connect your Git repository
-   - Configure build settings
-   - Deploy automatically on push
-
-### Environment Variables
-
-The application uses AWS Amplify's automatic configuration. No manual environment variables are required for basic functionality.
+### AI Insights
+- **Pattern Recognition**: Identify trends in your responses
+- **Personalized Recommendations**: Tailored suggestions for growth
+- **Mood Analysis**: Track emotional patterns over time
+- **Learning Style Detection**: Optimize based on your preferences
 
 ## 🔧 Configuration
 
-### Amplify Backend
+### AWS Amplify Setup
+The app uses AWS Amplify Gen 2 for backend services. Key configurations:
 
-The backend is configured in the `amplify/` directory:
+- **Authentication**: Cognito User Pools with email/password
+- **Storage**: S3 for media file uploads
+- **API**: GraphQL for data operations (if needed)
 
-- **Authentication**: Email-based signup with required user attributes
-- **Data**: GraphQL API with user profiles, exercises, responses, and insights
-- **Storage**: S3 bucket for media uploads with proper access controls
-
-### Material-UI Theme
-
-Custom theme configuration in `src/lib/theme.ts` with North branding:
-- Primary color: Deep blue (#1a237e)
-- Secondary color: Vibrant orange (#ff6b35)
-- Custom component styling for buttons, cards, and navigation
-
-## 📱 Usage
-
-1. **Sign Up**: Create an account with email and basic profile information
-2. **Explore Exercises**: Browse categorized personal development exercises
-3. **Complete Exercises**: Respond with text, audio, or video
-4. **View Insights**: Get AI-powered analysis and recommendations
-5. **Build Playbook**: Watch your personal development story grow
-6. **Export PDF**: Download your complete journey as a beautiful PDF
+### Environment Variables
+Create a `.env.local` file:
+```env
+NEXT_PUBLIC_AWS_REGION=us-west-2
+NEXT_PUBLIC_USER_POOL_ID=us-west-2_xxxxxxxxx
+NEXT_PUBLIC_USER_POOL_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxx
+```
 
 ## 🤝 Contributing
 
@@ -167,24 +192,19 @@ Custom theme configuration in `src/lib/theme.ts` with North branding:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+## 🙏 Acknowledgments
 
-For support and questions:
-- Create an issue in the repository
-- Contact the North team
+- Built with [Next.js](https://nextjs.org/)
+- UI components from [Material-UI](https://mui.com/)
+- Backend powered by [AWS Amplify](https://aws.amazon.com/amplify/)
+- Icons from [Material Icons](https://mui.com/material-ui/material-icons/)
 
-## 🎯 Roadmap
+## 📞 Support
 
-- [ ] Advanced AI insights with trend analysis
-- [ ] Social sharing features
-- [ ] Mobile app development
-- [ ] Integration with wearable devices
-- [ ] Group challenges and community features
-- [ ] Advanced analytics dashboard
-- [ ] Multi-language support
+For support, email your-email@example.com or create an issue in this repository.
 
 ---
 
-**Built with ❤️ by North - Empowering personal growth through technology.**
+**Start your personal development journey today with North Playbook!** 🚀
