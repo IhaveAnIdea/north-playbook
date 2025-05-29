@@ -6,8 +6,15 @@ import { devStorageService } from './dev-storage-service';
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isAmplifyConfigured = () => {
   try {
-    // Try to access Amplify configuration
-    return typeof window !== 'undefined' && (window as any).aws_amplify_config;
+    // Check if we have a real bucket name (not placeholder)
+    if (typeof window !== 'undefined') {
+      const amplifyConfig = (window as any).aws_amplify_config;
+      return amplifyConfig && 
+             amplifyConfig.storage && 
+             amplifyConfig.storage.bucket_name && 
+             amplifyConfig.storage.bucket_name !== 'placeholder';
+    }
+    return false;
   } catch {
     return false;
   }

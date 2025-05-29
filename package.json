@@ -6,7 +6,12 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "deploy": "amplify push --yes",
+    "deploy:build": "npm run build && npm run deploy",
+    "amplify:init": "amplify init",
+    "amplify:status": "amplify status",
+    "amplify:console": "amplify console"
   },
   "dependencies": {
     "@aws-amplify/backend": "^1.16.1",
