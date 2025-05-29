@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -24,7 +24,12 @@ import Navbar from '@/components/layout/Navbar';
 import { samplePlaybookEntries, generatePlaybookSections } from '@/data/playbook';
 
 export default function ProgressPage() {
+  const [mounted, setMounted] = useState(false);
   const sections = generatePlaybookSections(samplePlaybookEntries);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Calculate progress metrics
   const calculateProgress = () => {
@@ -38,18 +43,22 @@ export default function ProgressPage() {
       completionRate: Math.min((section.entries.length / 5) * 100, 100) // Assume 5 entries = 100%
     }));
 
-    // Calculate weekly activity
-    const now = new Date();
-    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const weeklyEntries = samplePlaybookEntries.filter(entry => 
-      entry.completedAt >= oneWeekAgo
-    ).length;
+    // Only calculate time-based metrics after mounting to avoid hydration issues
+    let weeklyEntries = 0;
+    let monthlyEntries = 0;
+    
+    if (mounted) {
+      const now = new Date();
+      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      weeklyEntries = samplePlaybookEntries.filter(entry => 
+        entry.completedAt >= oneWeekAgo
+      ).length;
 
-    // Calculate monthly activity
-    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    const monthlyEntries = samplePlaybookEntries.filter(entry => 
-      entry.completedAt >= oneMonthAgo
-    ).length;
+      const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      monthlyEntries = samplePlaybookEntries.filter(entry => 
+        entry.completedAt >= oneMonthAgo
+      ).length;
+    }
 
     return {
       totalEntries,

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import {
   Box,
@@ -65,7 +65,12 @@ interface MagazinePage {
 
 export default function MagazineLayout({ sections, userName = 'Your', userDisplayName }: MagazineLayoutProps) {
   const [currentPage, setCurrentPage] = useState(0);
+  const [mounted, setMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Generate magazine pages with flowing content
   const generatePages = (): MagazinePage[] => {
@@ -109,6 +114,7 @@ export default function MagazineLayout({ sections, userName = 'Your', userDispla
   };
 
   const formatDate = (date: Date) => {
+    if (!mounted) return '';
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -144,7 +150,7 @@ export default function MagazineLayout({ sections, userName = 'Your', userDispla
             PERSONAL DEVELOPMENT
           </Typography>
           <Typography variant="body2" sx={{ opacity: 0.8 }}>
-            {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase()}
+            {mounted ? new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase() : ''}
           </Typography>
         </Box>
       </Box>

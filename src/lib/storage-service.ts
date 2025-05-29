@@ -70,7 +70,16 @@ class StorageService {
     originalName: string,
     options?: UploadOptions
   ): string {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    // Use a more predictable timestamp format
+    const now = new Date();
+    const timestamp = now.getFullYear() + 
+      '-' + String(now.getMonth() + 1).padStart(2, '0') + 
+      '-' + String(now.getDate()).padStart(2, '0') + 
+      'T' + String(now.getHours()).padStart(2, '0') + 
+      '-' + String(now.getMinutes()).padStart(2, '0') + 
+      '-' + String(now.getSeconds()).padStart(2, '0') + 
+      '-' + String(now.getMilliseconds()).padStart(3, '0') + 'Z';
+    
     const sanitizedName = originalName.replace(/[^a-zA-Z0-9.-]/g, '_');
     
     let path = `users/${userId}/${pathType}`;

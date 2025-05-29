@@ -9,7 +9,7 @@ export interface PlaybookEntry {
   response: string;
   responseType: 'text' | 'audio' | 'video';
   insights?: string[];
-  mood?: 'positive' | 'neutral' | 'reflective' | 'motivated';
+  mood?: string;
   tags?: string[];
   images?: ImageData[];
 }
@@ -46,7 +46,6 @@ const createSampleEntries = (): PlaybookEntry[] => [
         name: 'morning_coffee.jpg',
         size: 245760,
         type: 'image/jpeg',
-        uploadedAt: new Date('2024-01-15T10:05:00Z'),
         caption: 'My peaceful morning coffee ritual'
       }
     ]
@@ -105,7 +104,6 @@ const createSampleEntries = (): PlaybookEntry[] => [
         name: 'garden_vision.jpg',
         size: 312480,
         type: 'image/jpeg',
-        uploadedAt: new Date('2024-01-25T16:50:00Z'),
         caption: 'My dream garden where I grow my own vegetables'
       },
       {
@@ -114,7 +112,6 @@ const createSampleEntries = (): PlaybookEntry[] => [
         name: 'leadership_inspiration.jpg',
         size: 287360,
         type: 'image/jpeg',
-        uploadedAt: new Date('2024-01-25T16:52:00Z'),
         caption: 'Visual inspiration for my leadership journey'
       }
     ]
@@ -191,8 +188,10 @@ const generateCategoryInsights = (category: string, entries: PlaybookEntry[]): s
     metaInsights.push(`Strong engagement with ${category} exercises (${entries.length} completed)`);
   }
   
+  // Use static date comparison to avoid hydration issues
+  const thirtyDaysAgo = new Date('2024-01-01'); // Static reference date
   const recentEntries = entries.filter(entry => 
-    (new Date().getTime() - entry.completedAt.getTime()) < (30 * 24 * 60 * 60 * 1000)
+    entry.completedAt >= thirtyDaysAgo
   );
   
   if (recentEntries.length > 0) {
