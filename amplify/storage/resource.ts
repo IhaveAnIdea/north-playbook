@@ -1,16 +1,26 @@
 import { defineStorage } from '@aws-amplify/backend';
 
 export const storage = defineStorage({
-  name: 'northPlaybookStorage',
+  name: 'north-playbook-storage',
   access: (allow) => ({
+    // Public assets (app-wide resources)
     'public/*': [
       allow.guest.to(['read']),
-      allow.authenticated.to(['read', 'write', 'delete'])
+      allow.authenticated.to(['read'])
     ],
-    'protected/{entity_id}/*': [
-      allow.authenticated.to(['read', 'write', 'delete'])
+    
+    // User-specific playbook assets
+    'users/{entity_id}/playbook/*': [
+      allow.entity('identity').to(['read', 'write', 'delete'])
     ],
-    'private/{entity_id}/*': [
+    
+    // User profile assets
+    'users/{entity_id}/profile/*': [
+      allow.entity('identity').to(['read', 'write', 'delete'])
+    ],
+    
+    // Temporary uploads (for processing)
+    'temp/{entity_id}/*': [
       allow.entity('identity').to(['read', 'write', 'delete'])
     ]
   })

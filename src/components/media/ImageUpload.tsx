@@ -1,306 +1,381 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Box,
-  IconButton,
   Typography,
+  Button,
   Card,
   CardMedia,
-  CardActions,
+  IconButton,
   Stack,
+  Chip,
+  CircularProgress,
   Alert,
+  TextField,
 } from '@mui/material';
 import {
   CloudUpload,
   Delete,
-  Download,
-  Visibility,
+  Image as ImageIcon,
+  Add,
 } from '@mui/icons-material';
-
-interface ImageUploadProps {
-  onImageUpload: (imageData: ImageData) => void;
-  onImageRemove?: (imageId: string) => void;
-  existingImages?: ImageData[];
-  maxImages?: number;
-  maxSizeMB?: number;
-  acceptedFormats?: string[];
-  disabled?: boolean;
-}
+import { storageService, UploadOptions } from '@/lib/storage-service';
 
 export interface ImageData {
   id: string;
-  file?: File;
-  url: string;
   name: string;
-  size: number;
-  type: string;
+  url: string;
   caption?: string;
-  uploadedAt: Date;
+  size?: number;
+  type?: string;
+  s3Key?: string; // S3 storage key
+  metadata?: Record<string, unknown>; // S3 metadata
+}
+
+interface ImageUploadProps {
+  images: ImageData[];
+  onImagesChange: (images: ImageData[]) => void;
+  maxImages?: number;
+  maxSizePerImage?: number; // in MB
+  acceptedTypes?: string[];
+  exerciseId?: string;
+  exerciseTitle?: string;
+  category?: string;
+  responseType?: 'text' | 'audio' | 'video';
+  mood?: string;
+  tags?: string[];
 }
 
 export default function ImageUpload({
-  onImageUpload,
-  onImageRemove,
-  existingImages = [],
-  maxImages = 5,
-  maxSizeMB = 10,
-  acceptedFormats = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-  disabled = false,
+  images,
+  onImagesChange,
+  maxImages = 10,
+  maxSizePerImage = 10,
+  acceptedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+  exerciseId,
+  exerciseTitle,
+  category,
+  responseType,
+  mood,
+  tags = []
 }: ImageUploadProps) {
-  const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [dragOver, setDragOver] = useState(false);
 
-  const handleFileSelect = (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-
-    const file = files[0];
+  const validateFile = (file: File): string | null => {
+    if (!acceptedTypes.includes(file.type)) {
+      return `File type ${file.type} is not supported. Please use: ${acceptedTypes.join(', ')}`;
+    }
     
-    // Validate file
-    const validation = validateFile(file);
-    if (!validation.valid) {
-      setError(validation.error!);
-      return;
+    if (file.size > maxSizePerImage * 1024 * 1024) {
+      return `File size must be less than ${maxSizePerImage}MB`;
     }
-
-    // Check if we've reached max images
-    if (existingImages.length >= maxImages) {
-      setError(`Maximum ${maxImages} images allowed`);
-      return;
+    
+    if (images.length >= maxImages) {
+      return `Maximum ${maxImages} images allowed`;
     }
+    
+    return null;
+  };
 
-    setError(null);
-    setUploading(true);
+  const uploadFile = async (file: File, description?: string): Promise<ImageData> => {
+    const uploadOptions: UploadOptions = {
+      exerciseId,
+      exerciseTitle,
+      category,
+      responseType,
+      mood,
+      tags: [...tags, 'image'],
+      description
+    };
 
-    // Create image data
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const imageData: ImageData = {
-        id: `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        file,
-        url: e.target?.result as string,
+    try {
+      const result = await storageService.uploadPlaybookAsset(file, uploadOptions);
+      
+      return {
+        id: result.key, // Use S3 key as ID
         name: file.name,
+        url: result.url,
+        caption: description,
         size: file.size,
         type: file.type,
-        uploadedAt: new Date(),
+        s3Key: result.key,
+        metadata: result.metadata
       };
-
-      onImageUpload(imageData);
-      setUploading(false);
-    };
-
-    reader.onerror = () => {
-      setError('Failed to read file');
-      setUploading(false);
-    };
-
-    reader.readAsDataURL(file);
-  };
-
-  const validateFile = (file: File): { valid: boolean; error?: string } => {
-    if (!acceptedFormats.includes(file.type)) {
-      return {
-        valid: false,
-        error: `File type not supported. Please use: ${acceptedFormats.map(f => f.split('/')[1]).join(', ')}`
-      };
-    }
-
-    if (file.size > maxSizeMB * 1024 * 1024) {
-      return {
-        valid: false,
-        error: `File size too large. Maximum size is ${maxSizeMB}MB`
-      };
-    }
-
-    return { valid: true };
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    if (!disabled) {
-      setDragOver(true);
+    } catch (error) {
+      console.error('Upload failed:', error);
+      throw new Error(`Failed to upload ${file.name}: ${error}`);
     }
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-  };
+  const handleFileSelect = useCallback(async (files: FileList | File[]) => {
+    setError(null);
+    setUploading(true);
+    
+    const fileArray = Array.from(files);
+    const newImages: ImageData[] = [];
+    const errors: string[] = [];
 
-  const handleDrop = (e: React.DragEvent) => {
+    for (const file of fileArray) {
+      const validationError = validateFile(file);
+      if (validationError) {
+        errors.push(validationError);
+        continue;
+      }
+
+      try {
+        setUploadProgress(prev => ({ ...prev, [file.name]: 0 }));
+        
+        // Simulate progress for better UX
+        const progressInterval = setInterval(() => {
+          setUploadProgress(prev => ({
+            ...prev,
+            [file.name]: Math.min((prev[file.name] || 0) + 10, 90)
+          }));
+        }, 100);
+
+        const imageData = await uploadFile(file);
+        
+        clearInterval(progressInterval);
+        setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
+        
+        newImages.push(imageData);
+        
+        // Clean up progress after a delay
+        setTimeout(() => {
+          setUploadProgress(prev => {
+            const updated = { ...prev };
+            delete updated[file.name];
+            return updated;
+          });
+        }, 1000);
+        
+      } catch (error) {
+        errors.push(`${file.name}: ${error}`);
+        setUploadProgress(prev => {
+          const updated = { ...prev };
+          delete updated[file.name];
+          return updated;
+        });
+      }
+    }
+
+    if (errors.length > 0) {
+      setError(errors.join('\n'));
+    }
+
+    if (newImages.length > 0) {
+      onImagesChange([...images, ...newImages]);
+    }
+    
+    setUploading(false);
+  }, [images, onImagesChange, maxImages, maxSizePerImage, acceptedTypes, exerciseId, exerciseTitle, category, responseType, mood, tags]);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
     
-    if (disabled) return;
-
     const files = e.dataTransfer.files;
-    handleFileSelect(files);
-  };
+    if (files.length > 0) {
+      handleFileSelect(files);
+    }
+  }, [handleFileSelect]);
 
-  const handleButtonClick = () => {
-    if (disabled) return;
-    fileInputRef.current?.click();
-  };
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(true);
+  }, []);
 
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleFileSelect(e.target.files);
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+  }, []);
+
+  const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      handleFileSelect(files);
+    }
     // Reset input value to allow selecting the same file again
     e.target.value = '';
-  };
+  }, [handleFileSelect]);
 
-  const handleRemoveImage = (imageId: string) => {
-    if (onImageRemove) {
-      onImageRemove(imageId);
+  const handleRemoveImage = async (imageId: string) => {
+    try {
+      const imageToRemove = images.find(img => img.id === imageId);
+      if (imageToRemove?.s3Key) {
+        await storageService.deleteAsset(imageToRemove.s3Key);
+      }
+      
+      const updatedImages = images.filter(img => img.id !== imageId);
+      onImagesChange(updatedImages);
+    } catch (error) {
+      console.error('Error removing image:', error);
+      setError(`Failed to remove image: ${error}`);
     }
   };
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  const handleUpdateCaption = (imageId: string, caption: string) => {
+    const updatedImages = images.map(img =>
+      img.id === imageId ? { ...img, caption } : img
+    );
+    onImagesChange(updatedImages);
   };
-
-  const canUploadMore = existingImages.length < maxImages;
 
   return (
     <Box>
       {/* Upload Area */}
-      {canUploadMore && (
-        <Box
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          sx={{
-            border: 2,
-            borderStyle: 'dashed',
-            borderColor: dragOver ? 'primary.main' : 'grey.300',
-            borderRadius: 2,
-            p: 3,
-            textAlign: 'center',
-            bgcolor: dragOver ? 'primary.50' : 'grey.50',
-            cursor: disabled ? 'not-allowed' : 'pointer',
-            transition: 'all 0.2s ease',
-            opacity: disabled ? 0.5 : 1,
-            '&:hover': {
-              borderColor: disabled ? 'grey.300' : 'primary.main',
-              bgcolor: disabled ? 'grey.50' : 'primary.50',
-            },
-          }}
-          onClick={handleButtonClick}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept={acceptedFormats.join(',')}
-            onChange={handleFileInputChange}
-            style={{ display: 'none' }}
-            disabled={disabled}
-          />
-          
-          <CloudUpload sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
-          
-          <Typography variant="h6" gutterBottom>
-            {uploading ? 'Uploading...' : 'Upload Image'}
+      <Card
+        sx={{
+          p: 3,
+          mb: 3,
+          border: 2,
+          borderStyle: 'dashed',
+          borderColor: dragOver ? 'primary.main' : 'grey.300',
+          bgcolor: dragOver ? 'primary.50' : 'grey.50',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          '&:hover': {
+            borderColor: 'primary.main',
+            bgcolor: 'primary.50'
+          }
+        }}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onClick={() => document.getElementById('image-upload-input')?.click()}
+      >
+        <Stack alignItems="center" spacing={2}>
+          <CloudUpload sx={{ fontSize: 48, color: 'primary.main' }} />
+          <Typography variant="h6" textAlign="center">
+            Drop images here or click to browse
           </Typography>
-          
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Drag and drop an image here, or click to select
+          <Typography variant="body2" color="text.secondary" textAlign="center">
+            Supports: {acceptedTypes.map(type => type.split('/')[1]).join(', ')}
+            <br />
+            Max size: {maxSizePerImage}MB per image, {maxImages} images total
           </Typography>
-          
-          <Typography variant="caption" color="text.secondary">
-            Supported formats: {acceptedFormats.map(f => f.split('/')[1].toUpperCase()).join(', ')} • 
-            Max size: {maxSizeMB}MB • 
-            Max images: {maxImages}
-          </Typography>
-        </Box>
-      )}
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            disabled={uploading || images.length >= maxImages}
+          >
+            Select Images
+          </Button>
+        </Stack>
+      </Card>
+
+      <input
+        id="image-upload-input"
+        type="file"
+        multiple
+        accept={acceptedTypes.join(',')}
+        onChange={handleFileInput}
+        style={{ display: 'none' }}
+      />
 
       {/* Error Display */}
       {error && (
-        <Alert severity="error" sx={{ mt: 2 }} onClose={() => setError(null)}>
-          {error}
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error.split('\n').map((line, index) => (
+            <div key={index}>{line}</div>
+          ))}
         </Alert>
       )}
 
-      {/* Existing Images */}
-      {existingImages.length > 0 && (
-        <Box sx={{ mt: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Uploaded Images ({existingImages.length}/{maxImages})
+      {/* Upload Progress */}
+      {Object.keys(uploadProgress).length > 0 && (
+        <Box sx={{ mb: 2 }}>
+          {Object.entries(uploadProgress).map(([fileName, progress]) => (
+            <Box key={fileName} sx={{ mb: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="body2" sx={{ minWidth: 0, flex: 1 }} noWrap>
+                  Uploading {fileName}...
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {progress}%
+                </Typography>
+              </Box>
+              <Box sx={{ width: '100%', mt: 0.5 }}>
+                <CircularProgress
+                  variant="determinate"
+                  value={progress}
+                  size={20}
+                  sx={{ color: 'primary.main' }}
+                />
+              </Box>
+            </Box>
+          ))}
+        </Box>
+      )}
+
+      {/* Image Grid */}
+      {images.length > 0 && (
+        <Box>
+          <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <ImageIcon fontSize="small" />
+            Uploaded Images ({images.length}/{maxImages})
           </Typography>
           
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 2 }}>
-            {existingImages.map((image) => (
+            {images.map((image) => (
               <Card key={image.id} sx={{ position: 'relative' }}>
                 <CardMedia
                   component="img"
-                  height="150"
+                  height={150}
                   image={image.url}
                   alt={image.name}
                   sx={{ objectFit: 'cover' }}
                 />
                 
-                <CardActions sx={{ p: 1, justifyContent: 'space-between' }}>
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography variant="caption" noWrap title={image.name}>
-                      {image.name}
-                    </Typography>
-                    <Typography variant="caption" display="block" color="text.secondary">
-                      {formatFileSize(image.size)}
-                    </Typography>
-                  </Box>
+                <Box sx={{ p: 1 }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    placeholder="Add caption..."
+                    value={image.caption || ''}
+                    onChange={(e) => handleUpdateCaption(image.id, e.target.value)}
+                    sx={{ mb: 1 }}
+                  />
                   
-                  <Stack direction="row" spacing={0.5}>
-                    <IconButton
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Chip
+                      label={`${(image.size! / 1024 / 1024).toFixed(1)}MB`}
                       size="small"
-                      onClick={() => window.open(image.url, '_blank')}
-                      title="View full size"
-                    >
-                      <Visibility fontSize="small" />
-                    </IconButton>
-                    
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        const link = document.createElement('a');
-                        link.href = image.url;
-                        link.download = image.name;
-                        link.click();
-                      }}
-                      title="Download"
-                    >
-                      <Download fontSize="small" />
-                    </IconButton>
-                    
-                    {onImageRemove && (
-                      <IconButton
+                      variant="outlined"
+                    />
+                    {image.metadata?.category && (
+                      <Chip
+                        label={image.metadata.category}
                         size="small"
-                        color="error"
-                        onClick={() => handleRemoveImage(image.id)}
-                        title="Remove"
-                      >
-                        <Delete fontSize="small" />
-                      </IconButton>
+                        color="primary"
+                        variant="outlined"
+                      />
                     )}
                   </Stack>
-                </CardActions>
+                </Box>
+                
+                <IconButton
+                  sx={{
+                    position: 'absolute',
+                    top: 8,
+                    right: 8,
+                    bgcolor: 'rgba(0,0,0,0.7)',
+                    color: 'white',
+                    '&:hover': { bgcolor: 'rgba(0,0,0,0.9)' }
+                  }}
+                  size="small"
+                  onClick={() => handleRemoveImage(image.id)}
+                >
+                  <Delete fontSize="small" />
+                </IconButton>
               </Card>
             ))}
           </Box>
         </Box>
-      )}
-
-      {/* Upload Limit Reached */}
-      {!canUploadMore && (
-        <Alert severity="info" sx={{ mt: 2 }}>
-          <Typography variant="body2">
-            Maximum number of images ({maxImages}) reached. Remove an image to upload a new one.
-          </Typography>
-        </Alert>
       )}
     </Box>
   );
