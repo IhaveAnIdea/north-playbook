@@ -1,5 +1,50 @@
 import { uploadData, downloadData, remove, list } from 'aws-amplify/storage';
 import { getCurrentUser } from 'aws-amplify/auth';
+import { devStorageService } from './dev-storage-service';
+
+// Check if we're in development mode and Amplify is not configured
+const isDevelopment = process.env.NODE_ENV === 'development';
+const isAmplifyConfigured = () => {
+  try {
+    // Try to access Amplify configuration
+    return typeof window !== 'undefined' && (window as any).aws_amplify_config;
+  } catch {
+    return false;
+  }
+};
+
+// Mock storage for development
+class MockStorageService {
+  private mockFiles = new Map<string, { file: File; metadata: any }>();
+
+  async uploadFile(key: string, file: File, metadata: any): Promise<{ key: string; url: string }> {
+    // Create a blob URL for the file
+    const url = URL.createObjectURL(file);
+    this.mockFiles.set(key, { file, metadata });
+    
+    console.log(`[MOCK STORAGE] Uploaded file: ${key}`, { metadata });
+    
+    return { key, url };
+  }
+
+  async deleteFile(key: string): Promise<void> {
+    const fileData = this.mockFiles.get(key);
+    if (fileData) {
+      URL.revokeObjectURL(fileData.file.name);
+      this.mockFiles.delete(key);
+      console.log(`[MOCK STORAGE] Deleted file: ${key}`);
+    }
+  }
+
+  async listFiles(): Promise<Array<{ key: string; metadata?: any }>> {
+    return Array.from(this.mockFiles.entries()).map(([key, data]) => ({
+      key,
+      metadata: data.metadata
+    }));
+  }
+}
+
+const mockStorage = new MockStorageService();
 
 // Storage path constants
 export const STORAGE_PATHS = {
@@ -161,6 +206,37 @@ class StorageService {
     options?: UploadOptions
   ): Promise<{ key: string; url: string; metadata: StorageMetadata }> {
     try {
+      // Use mock storage in development when Amplify is not configured
+      if (isDevelopment && !isAmplifyConfigured()) {
+        console.log('[DEV MODE] Using mock storage for file upload');
+        
+        const userId = 'dev-user-id'; // Mock user ID for development
+        const fileType = this.getFileType(file);
+        const filePath = this.generateFilePath(userId, STORAGE_PATHS.PLAYBOOK, file.name, options);
+        const metadata = this.generateMetadata(userId, file.name, fileType, options);
+
+        const result = await devStorageService.uploadFile(filePath, file, metadata);
+        
+        return {
+          key: result.key,
+          url: result.url,
+          metadata: {
+            userId,
+            exerciseId: options?.exerciseId,
+            exerciseTitle: options?.exerciseTitle,
+            category: options?.category,
+            responseType: options?.responseType,
+            mood: options?.mood,
+            tags: options?.tags,
+            uploadDate: new Date().toISOString(),
+            fileType,
+            originalName: file.name,
+            description: options?.description
+          }
+        };
+      }
+
+      // Production Amplify storage
       const userId = await this.getCurrentUserId();
       const fileType = this.getFileType(file);
       const filePath = this.generateFilePath(userId, STORAGE_PATHS.PLAYBOOK, file.name, options);
@@ -199,7 +275,7 @@ class StorageService {
       };
     } catch (error) {
       console.error('Error uploading playbook asset:', error);
-      throw new Error(`Failed to upload file: ${error}`);
+      throw new Error(`Failed to upload ${file.name}: ${error}`);
     }
   }
 
@@ -291,13 +367,19 @@ class StorageService {
   }
 
   /**
-   * Delete an asset
+   * Delete a file from storage
    */
   async deleteAsset(key: string): Promise<void> {
     try {
-      await remove({
-        key
-      });
+      // Use mock storage in development when Amplify is not configured
+      if (isDevelopment && !isAmplifyConfigured()) {
+        console.log('[DEV MODE] Using mock storage for file deletion');
+        await devStorageService.deleteFile(key);
+        return;
+      }
+
+      // Production Amplify storage
+      await remove({ key });
     } catch (error) {
       console.error('Error deleting asset:', error);
       throw new Error(`Failed to delete asset: ${error}`);

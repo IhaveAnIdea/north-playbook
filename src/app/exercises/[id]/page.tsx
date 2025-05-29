@@ -91,18 +91,10 @@ export default function ExercisePage() {
   };
 
   const handleStopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
-  };
-
-  const handleImageUpload = (imageData: ImageData) => {
-    setImages(prev => [...prev, imageData]);
-  };
-
-  const handleImageRemove = (imageId: string) => {
-    setImages(prev => prev.filter(img => img.id !== imageId));
+    setIsRecording(false);
+    // In a real app, you would stop the actual recording here
+    // For now, we'll just create a dummy blob
+    setRecordedBlob(new Blob(['dummy audio data'], { type: 'audio/wav' }));
   };
 
   const handleSubmit = async () => {
@@ -297,11 +289,14 @@ export default function ExercisePage() {
                 Upload images that relate to your response - inspiration photos, diagrams, or visual references.
               </Typography>
               <ImageUpload
-                onImageUpload={handleImageUpload}
-                onImageRemove={handleImageRemove}
-                existingImages={images}
+                images={images}
+                onImagesChange={setImages}
                 maxImages={3}
-                maxSizeMB={5}
+                maxSizePerImage={5}
+                exerciseId={exerciseId}
+                exerciseTitle={exercise.title}
+                category={exercise.category}
+                responseType={exercise.promptType}
               />
             </Box>
 

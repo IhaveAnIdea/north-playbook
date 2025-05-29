@@ -34,7 +34,7 @@ export interface ImageData {
 }
 
 interface ImageUploadProps {
-  images: ImageData[];
+  images?: ImageData[];
   onImagesChange: (images: ImageData[]) => void;
   maxImages?: number;
   maxSizePerImage?: number; // in MB
@@ -48,7 +48,7 @@ interface ImageUploadProps {
 }
 
 export default function ImageUpload({
-  images,
+  images = [],
   onImagesChange,
   maxImages = 10,
   maxSizePerImage = 10,
@@ -103,7 +103,19 @@ export default function ImageUpload({
         size: file.size,
         type: file.type,
         s3Key: result.key,
-        metadata: result.metadata
+        metadata: {
+          userId: 'user-id',
+          exerciseId: uploadOptions?.exerciseId,
+          exerciseTitle: uploadOptions?.exerciseTitle,
+          category: uploadOptions?.category,
+          responseType: uploadOptions?.responseType,
+          mood: uploadOptions?.mood,
+          tags: uploadOptions?.tags,
+          uploadDate: new Date().toISOString(),
+          fileType: file.type,
+          originalName: file.name,
+          description: uploadOptions?.description
+        } as Record<string, unknown>
       };
     } catch (error) {
       console.error('Upload failed:', error);
@@ -227,6 +239,14 @@ export default function ImageUpload({
 
   return (
     <Box>
+      {/* Development Mode Notice */}
+      {process.env.NODE_ENV === 'development' && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          <strong>Development Mode:</strong> Files are stored locally in browser memory. 
+          They will be lost when you refresh the page.
+        </Alert>
+      )}
+
       {/* Upload Area */}
       <Card
         sx={{
@@ -349,7 +369,7 @@ export default function ImageUpload({
                     />
                     {image.metadata?.category && (
                       <Chip
-                        label={image.metadata.category}
+                        label={String(image.metadata.category)}
                         size="small"
                         color="primary"
                         variant="outlined"

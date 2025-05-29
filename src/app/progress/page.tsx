@@ -10,7 +10,6 @@ import {
   Stack,
   LinearProgress,
   Chip,
-  Grid,
   Paper,
 } from '@mui/material';
 import {
@@ -126,55 +125,47 @@ export default function ProgressPage() {
         </Card>
 
         {/* Stats Grid */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper sx={{ p: 3, textAlign: 'center' }}>
-              <Assignment sx={{ fontSize: 40, color: 'primary.main', mb: 2 }} />
-              <Typography variant="h4" component="div" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                {progress.totalEntries}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Total Entries
-              </Typography>
-            </Paper>
-          </Grid>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 3, mb: 4 }}>
+          <Paper sx={{ p: 3, textAlign: 'center' }}>
+            <Assignment sx={{ fontSize: 40, color: 'primary.main', mb: 2 }} />
+            <Typography variant="h4" component="div" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+              {progress.totalEntries}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Total Entries
+            </Typography>
+          </Paper>
           
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper sx={{ p: 3, textAlign: 'center' }}>
-              <LibraryBooks sx={{ fontSize: 40, color: 'secondary.main', mb: 2 }} />
-              <Typography variant="h4" component="div" sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
-                {progress.categoriesActive}/{progress.totalCategories}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Categories Active
-              </Typography>
-            </Paper>
-          </Grid>
+          <Paper sx={{ p: 3, textAlign: 'center' }}>
+            <LibraryBooks sx={{ fontSize: 40, color: 'secondary.main', mb: 2 }} />
+            <Typography variant="h4" component="div" sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
+              {progress.categoriesActive}/{progress.totalCategories}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Categories Active
+            </Typography>
+          </Paper>
           
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper sx={{ p: 3, textAlign: 'center' }}>
-              <CalendarToday sx={{ fontSize: 40, color: 'success.main', mb: 2 }} />
-              <Typography variant="h4" component="div" sx={{ fontWeight: 'bold', color: 'success.main' }}>
-                {progress.weeklyEntries}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                This Week
-              </Typography>
-            </Paper>
-          </Grid>
+          <Paper sx={{ p: 3, textAlign: 'center' }}>
+            <CalendarToday sx={{ fontSize: 40, color: 'success.main', mb: 2 }} />
+            <Typography variant="h4" component="div" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+              {progress.weeklyEntries}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              This Week
+            </Typography>
+          </Paper>
           
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper sx={{ p: 3, textAlign: 'center' }}>
-              <Timeline sx={{ fontSize: 40, color: 'warning.main', mb: 2 }} />
-              <Typography variant="h4" component="div" sx={{ fontWeight: 'bold', color: 'warning.main' }}>
-                {progress.monthlyEntries}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                This Month
-              </Typography>
-            </Paper>
-          </Grid>
-        </Grid>
+          <Paper sx={{ p: 3, textAlign: 'center' }}>
+            <Timeline sx={{ fontSize: 40, color: 'warning.main', mb: 2 }} />
+            <Typography variant="h4" component="div" sx={{ fontWeight: 'bold', color: 'warning.main' }}>
+              {progress.monthlyEntries}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              This Month
+            </Typography>
+          </Paper>
+        </Box>
 
         {/* Category Progress */}
         <Card sx={{ mb: 4 }}>
