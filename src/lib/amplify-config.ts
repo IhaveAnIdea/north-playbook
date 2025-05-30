@@ -1,12 +1,13 @@
 import { Amplify } from 'aws-amplify';
+import { GraphQLAuthMode } from 'aws-amplify/api';
 
 // Configuration using existing Cognito resources
 const amplifyConfig = {
   Auth: {
     Cognito: {
-      userPoolId: 'us-west-2_8Z8laebmh',
-      userPoolClientId: '7ej6vdok2mbsgnsksamul54i2h',
-      identityPoolId: 'us-west-2:3b6a56ad-d987-415b-948a-7bd1149d0501',
+      userPoolId: 'us-west-2_qouweUIhn',
+      userPoolClientId: '1hj3djevgisa949h2mtivirgaj',
+      identityPoolId: 'us-west-2:953189a1-ed24-4504-98ee-0b2ee6e1f942',
       loginWith: {
         email: true,
       },
@@ -42,7 +43,7 @@ const amplifyConfig = {
     GraphQL: {
       endpoint: 'https://your-api-endpoint.appsync-api.us-west-2.amazonaws.com/graphql',
       region: 'us-west-2',
-      defaultAuthMode: 'userPool',
+      defaultAuthMode: 'userPool' as GraphQLAuthMode,
     },
   },
 };
