@@ -1,0 +1,81 @@
+type UserProfile @model @auth(rules: [{allow: owner, ownerField: "owner"}])
+{
+  userId: ID!
+  firstName: String!
+  lastName: String!
+  email: AWSEmail!
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Exercise @model @auth(rules: [{allow: public, provider: apiKey, operations: [read]},
+  {allow: private, operations: [read]}])
+{
+  title: String!
+  description: String!
+  category: ExerciseCategory
+  question: String!
+  promptType: ExercisePromptType
+  isActive: Boolean @default(value: "true")
+  order: Int
+  createdAt: AWSDateTime
+  responses: [ExerciseResponse] @hasMany(references: ["exerciseId"])
+}
+
+type ExerciseResponse @model @auth(rules: [{allow: owner, ownerField: "owner"}])
+{
+  exerciseId: ID!
+  userId: ID!
+  responseText: String
+  audioUrl: String
+  videoUrl: String
+  s3Key: String
+  analysisResult: AWSJSON
+  insights: String
+  mood: String
+  tags: [String]
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  exercise: Exercise @belongsTo(references: ["exerciseId"])
+}
+
+type PlaybookEntry @model @auth(rules: [{allow: owner, ownerField: "owner"}])
+{
+  userId: ID!
+  title: String!
+  content: String!
+  category: String!
+  insights: String
+  mediaUrls: [String]
+  mood: String
+  tags: [String]
+  isHighlight: Boolean @default(value: "false")
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type UserInsights @model @auth(rules: [{allow: owner, ownerField: "owner"}])
+{
+  userId: ID!
+  overallMood: String
+  growthAreas: [String]
+  strengths: [String]
+  recommendations: [String]
+  progressMetrics: AWSJSON
+  lastUpdated: AWSDateTime
+}
+
+enum ExerciseCategory {
+  mindset
+  motivation
+  goals
+  reflection
+  gratitude
+  vision
+}
+
+enum ExercisePromptType {
+  text
+  audio
+  video
+}
