@@ -1,5 +1,4 @@
 import { Amplify } from 'aws-amplify';
-import { GraphQLAuthMode } from 'aws-amplify/api';
 
 // Configuration using existing Cognito resources
 const amplifyConfig = {
@@ -11,7 +10,7 @@ const amplifyConfig = {
       loginWith: {
         email: true,
       },
-      signUpVerificationMethod: 'code',
+      signUpVerificationMethod: 'code' as const,
       userAttributes: {
         email: {
           required: true,
@@ -43,7 +42,7 @@ const amplifyConfig = {
     GraphQL: {
       endpoint: 'https://your-api-endpoint.appsync-api.us-west-2.amazonaws.com/graphql',
       region: 'us-west-2',
-      defaultAuthMode: 'userPool' as GraphQLAuthMode,
+      defaultAuthMode: 'userPool' as const,
     },
   },
 };
