@@ -63,7 +63,7 @@ export default function RichTextEditor({
       <div className="border border-gray-300 rounded-md focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
         <Editor
           id={id}
-          apiKey="hirujqlkg0lbu4vwnpfpl3kqma8xl455c9yxmlf6lekzhj13"
+          apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY || "no-api-key"}
           value={value}
           onEditorChange={handleEditorChange}
           disabled={disabled}
