@@ -25,6 +25,7 @@ import { PlaybookEntry } from '@/data/playbook';
 import AudioPlayer from '@/components/media/AudioPlayer';
 import VideoPlayer from '@/components/media/VideoPlayer';
 import ImageGallery from '@/components/media/ImageGallery';
+import DocumentThumbnail from '@/components/media/DocumentThumbnail';
 
 const categoryIcons = {
   mindset: Psychology,
@@ -141,32 +142,57 @@ export default function PlaybookEntryComponent({ entry, showFullResponse = true 
           
           {entry.responseType === 'text' ? (
             <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 1, borderLeft: 4, borderColor: 'primary.main' }}>
-              <Typography variant="body1">
-                {showFullResponse ? entry.response : truncateResponse(entry.response)}
-              </Typography>
+              <div 
+                className="rich-text-content prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ 
+                  __html: showFullResponse ? entry.response : truncateResponse(entry.response)
+                }}
+              />
             </Box>
           ) : entry.responseType === 'audio' ? (
             <Box sx={{ mb: 2 }}>
-              <AudioPlayer 
-                src="https://www.soundjay.com/misc/sounds/bell-ringing-05.wav" // Sample audio for demo
-                title={`Audio response for ${entry.exerciseTitle}`}
-              />
-              <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1, borderLeft: 4, borderColor: 'primary.main' }}>
-                <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
-                  {entry.response}
-                </Typography>
+              {/* Audio Files */}
+              {entry.audioFiles && entry.audioFiles.length > 0 && (
+                <Stack spacing={2} sx={{ mb: 2 }}>
+                  {entry.audioFiles.map((audio) => (
+                    <AudioPlayer 
+                      key={audio.id}
+                      src={audio.url}
+                      title={audio.name}
+                    />
+                  ))}
+                </Stack>
+              )}
+              
+              {/* Response Text */}
+              <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 1, borderLeft: 4, borderColor: 'primary.main' }}>
+                <div 
+                  className="rich-text-content prose prose-sm max-w-none text-sm italic"
+                  dangerouslySetInnerHTML={{ __html: entry.response }}
+                />
               </Box>
             </Box>
           ) : entry.responseType === 'video' ? (
             <Box sx={{ mb: 2 }}>
-              <VideoPlayer 
-                src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" // Sample video for demo
-                title={`Video response for ${entry.exerciseTitle}`}
-              />
-              <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1, borderLeft: 4, borderColor: 'primary.main' }}>
-                <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
-                  {entry.response}
-                </Typography>
+              {/* Videos */}
+              {entry.videos && entry.videos.length > 0 && (
+                <Stack spacing={2} sx={{ mb: 2 }}>
+                  {entry.videos.map((video) => (
+                    <VideoPlayer 
+                      key={video.id}
+                      src={video.url}
+                      title={video.name}
+                    />
+                  ))}
+                </Stack>
+              )}
+              
+              {/* Response Text */}
+              <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 1, borderLeft: 4, borderColor: 'primary.main' }}>
+                <div 
+                  className="rich-text-content prose prose-sm max-w-none text-sm italic"
+                  dangerouslySetInnerHTML={{ __html: entry.response }}
+                />
               </Box>
             </Box>
           ) : null}
@@ -181,6 +207,25 @@ export default function PlaybookEntryComponent({ entry, showFullResponse = true 
               variant="grid"
               maxHeight={200}
             />
+          </Box>
+        )}
+
+        {/* Documents */}
+        {entry.documents && entry.documents.length > 0 && (
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" gutterBottom>
+              Documents:
+            </Typography>
+            <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap', gap: 2 }}>
+              {entry.documents.map((document) => (
+                <DocumentThumbnail
+                  key={document.id}
+                  document={document}
+                  showDownload={true}
+                  showRemove={false}
+                />
+              ))}
+            </Stack>
           </Box>
         )}
 

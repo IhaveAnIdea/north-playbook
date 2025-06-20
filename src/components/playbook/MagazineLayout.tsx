@@ -31,6 +31,7 @@ import { PlaybookSection, PlaybookEntry } from '@/data/playbook';
 import AudioPlayer from '@/components/media/AudioPlayer';
 import VideoPlayer from '@/components/media/VideoPlayer';
 import ImageGallery from '@/components/media/ImageGallery';
+import DocumentThumbnail from '@/components/media/DocumentThumbnail';
 
 const categoryIcons = {
   mindset: Psychology,
@@ -57,10 +58,14 @@ interface MagazineLayoutProps {
 }
 
 interface MagazinePage {
-  type: 'cover' | 'section-intro' | 'entry' | 'insights';
-  content?: PlaybookEntry;
+  type: 'cover' | 'journey-map' | 'milestone' | 'reflection-spread' | 'vision-board' | 'growth-story' | 'transformation';
+  content?: PlaybookEntry[];
   section?: PlaybookSection;
-  userName?: string;
+  title?: string;
+  subtitle?: string;
+  narrative?: string;
+  theme?: string;
+  mediaFocus?: 'images' | 'videos' | 'audio' | 'documents' | 'mixed';
 }
 
 export default function MagazineLayout({ sections, userName = 'Your', userDisplayName }: MagazineLayoutProps) {
@@ -72,29 +77,157 @@ export default function MagazineLayout({ sections, userName = 'Your', userDispla
     setMounted(true);
   }, []);
 
-  // Generate magazine pages with flowing content
+  // Extract and analyze user's journey data
+  const analyzeJourney = () => {
+    const allEntries = sections.flatMap(s => s.entries);
+    const totalEntries = allEntries.length;
+    
+    // Extract key themes and insights
+    const allInsights = allEntries.flatMap(e => e.insights || []);
+    const keyThemes = [...new Set(allEntries.map(e => e.category))];
+    
+    // Chronological progression
+    const chronological = allEntries.sort((a, b) => a.completedAt.getTime() - b.completedAt.getTime());
+    const recentEntries = allEntries.sort((a, b) => b.completedAt.getTime() - a.completedAt.getTime()).slice(0, 6);
+    
+    // Media analysis
+    const entriesWithImages = allEntries.filter(e => e.images && e.images.length > 0);
+    const entriesWithVideos = allEntries.filter(e => e.videos && e.videos.length > 0);
+    const entriesWithAudio = allEntries.filter(e => e.audioFiles && e.audioFiles.length > 0);
+    const entriesWithDocuments = allEntries.filter(e => e.documents && e.documents.length > 0);
+    
+    // Growth milestones (entries with significant insights or transformations)
+    const milestones = allEntries.filter(e => 
+      (e.insights && e.insights.length > 2) || 
+      e.mood === 'accomplished' || 
+      e.tags?.includes('breakthrough')
+    );
+
+    return {
+      totalEntries,
+      allInsights,
+      keyThemes,
+      chronological,
+      recentEntries,
+      entriesWithImages,
+      entriesWithVideos,
+      entriesWithAudio,
+      entriesWithDocuments,
+      milestones,
+      timeSpan: totalEntries > 0 ? {
+        start: chronological[0]?.completedAt,
+        end: chronological[chronological.length - 1]?.completedAt
+      } : null
+    };
+  };
+
+  const journeyData = analyzeJourney();
+
+  // Generate magazine-style narrative pages
   const generatePages = (): MagazinePage[] => {
     const pages: MagazinePage[] = [];
     
-    // Cover page
-    pages.push({ type: 'cover', userName });
-    
-    // Create magazine-style spreads
-    sections.forEach((section) => {
-      // Section feature page (like magazine article opener)
-      pages.push({ type: 'section-intro', section });
-      
-      // Entry pages
-      section.entries.forEach(entry => {
-        pages.push({ type: 'entry', content: entry, section });
+    // 1. Cover - The Journey Begins
+    pages.push({
+      type: 'cover',
+      title: `${userDisplayName || userName} Personal Journey`,
+      subtitle: 'A Story of Growth, Discovery & True North',
+      narrative: `${journeyData.totalEntries} moments of transformation across ${journeyData.keyThemes.length} life areas`
+    });
+
+    // 2. Journey Map - Visual Overview
+    pages.push({
+      type: 'journey-map',
+      title: 'Charting Your Course',
+      subtitle: 'The landscape of your personal development',
+      content: journeyData.chronological,
+      narrative: `From ${journeyData.timeSpan?.start ? formatDate(journeyData.timeSpan.start) : 'the beginning'} to ${journeyData.timeSpan?.end ? formatDate(journeyData.timeSpan.end) : 'today'}, mapping the territory of growth`
+    });
+
+    // 3. Vision Board - Images & Dreams
+    if (journeyData.entriesWithImages.length > 0) {
+      pages.push({
+        type: 'vision-board',
+        title: 'Visual Manifestations',
+        subtitle: 'The images that shape your reality',
+        content: journeyData.entriesWithImages,
+        mediaFocus: 'images',
+        narrative: 'Every image tells a story of intention, progress, and possibility'
       });
-      
-      // Section insights as magazine feature
-      if (section.insights.length > 0) {
-        pages.push({ type: 'insights', section });
+    }
+
+    // 4. Milestone Moments - Key Transformations
+    if (journeyData.milestones.length > 0) {
+      journeyData.milestones.forEach((milestone, index) => {
+        pages.push({
+          type: 'milestone',
+          title: `Breakthrough ${index + 1}`,
+          subtitle: milestone.exerciseTitle,
+          content: [milestone],
+          narrative: 'A moment when everything shifted',
+          theme: milestone.category
+        });
+      });
+    }
+
+    // 5. Reflection Spreads - Deep Insights by Theme
+    journeyData.keyThemes.forEach(theme => {
+      const themeEntries = journeyData.chronological.filter(e => e.category === theme);
+      if (themeEntries.length > 0) {
+        pages.push({
+          type: 'reflection-spread',
+          title: theme.charAt(0).toUpperCase() + theme.slice(1),
+          subtitle: 'Exploring the depths of transformation',
+          content: themeEntries,
+          theme,
+          narrative: `How ${theme} has evolved in your journey`
+        });
       }
     });
-    
+
+    // 6. Media Stories - Rich Content Features
+    if (journeyData.entriesWithVideos.length > 0) {
+      pages.push({
+        type: 'growth-story',
+        title: 'Moving Pictures',
+        subtitle: 'Your story in motion',
+        content: journeyData.entriesWithVideos,
+        mediaFocus: 'videos',
+        narrative: 'The moments you chose to capture in video tell a powerful story'
+      });
+    }
+
+    if (journeyData.entriesWithAudio.length > 0) {
+      pages.push({
+        type: 'growth-story',
+        title: 'Voices of Change',
+        subtitle: 'The sound of your evolution',
+        content: journeyData.entriesWithAudio,
+        mediaFocus: 'audio',
+        narrative: 'Your voice carries the emotion and authenticity of real transformation'
+      });
+    }
+
+    if (journeyData.entriesWithDocuments.length > 0) {
+      pages.push({
+        type: 'growth-story',
+        title: 'Written Wisdom',
+        subtitle: 'Documents of discovery',
+        content: journeyData.entriesWithDocuments,
+        mediaFocus: 'documents',
+        narrative: 'The artifacts of learning that mark your path forward'
+      });
+    }
+
+    // 7. Transformation Summary - Where You're Headed
+    pages.push({
+      type: 'transformation',
+      title: 'True North Revealed',
+      subtitle: 'The direction of your becoming',
+      content: journeyData.recentEntries,
+      narrative: 'Every step has been leading to this moment of clarity about who you are becoming'
+    });
+
     return pages;
   };
 
@@ -122,643 +255,454 @@ export default function MagazineLayout({ sections, userName = 'Your', userDispla
     });
   };
 
+  const getCategoryColor = (category: string) => {
+    const colors = {
+      mindset: 'from-purple-600 to-indigo-700',
+      motivation: 'from-orange-600 to-red-700',
+      goals: 'from-green-600 to-emerald-700',
+      reflection: 'from-blue-600 to-cyan-700',
+      gratitude: 'from-pink-600 to-rose-700',
+      vision: 'from-amber-600 to-yellow-700',
+    } as const;
+    return colors[category as keyof typeof colors] || 'from-gray-600 to-gray-700';
+  };
+
   const renderCoverPage = (page: MagazinePage) => {
-    // Get featured images from entries for background
-    const allImages = sections.flatMap(section => 
-      section.entries.flatMap(entry => entry.images || [])
-    );
-    const backgroundImages = allImages.slice(0, 4);
+    const featuredImages = journeyData.entriesWithImages.slice(0, 3);
     
     return (
-    <Box
-      sx={{
-        height: '100%',
-        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
-        color: 'white',
-        position: 'relative',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        fontSize: '14px',
-        textAlign: 'left',
-      }}
-    >
-      {/* Magazine Header */}
-      <Box sx={{ p: 3, borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', letterSpacing: 2 }}>
-            PERSONAL DEVELOPMENT
-          </Typography>
-          <Typography variant="body2" sx={{ opacity: 0.8 }}>
-            {mounted ? new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase() : ''}
-          </Typography>
-        </Box>
-      </Box>
-
-      {/* Background Images */}
-      {backgroundImages.length > 0 && (
-        <>
-          {/* Top Right Image */}
-          {backgroundImages[0] && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: '15%',
-                right: '5%',
-                width: '200px',
-                height: '150px',
-                borderRadius: 2,
-                overflow: 'hidden',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-                transform: 'rotate(8deg)',
-                zIndex: 1,
-                border: '3px solid white',
-              }}
-            >
-              <Image
-                src={backgroundImages[0].url}
-                alt={backgroundImages[0].caption || backgroundImages[0].name}
-                fill
-                style={{
-                  objectFit: 'cover'
-                }}
-              />
-            </Box>
-          )}
-          
-          {/* Bottom Left Image */}
-          {backgroundImages[1] && (
-            <Box
-              sx={{
-                position: 'absolute',
-                bottom: '20%',
-                left: '8%',
-                width: '180px',
-                height: '120px',
-                borderRadius: 2,
-                overflow: 'hidden',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-                transform: 'rotate(-5deg)',
-                zIndex: 1,
-                border: '3px solid white',
-              }}
-            >
-              <Image
-                src={backgroundImages[1].url}
-                alt={backgroundImages[1].caption || backgroundImages[1].name}
-                fill
-                style={{
-                  objectFit: 'cover'
-                }}
-              />
-            </Box>
-          )}
-          
-          {/* Center Right Small Image */}
-          {backgroundImages[2] && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: '45%',
-                right: '15%',
-                width: '120px',
-                height: '90px',
-                borderRadius: 2,
-                overflow: 'hidden',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-                transform: 'rotate(-12deg)',
-                zIndex: 1,
-                border: '2px solid white',
-              }}
-            >
-              <Image
-                src={backgroundImages[2].url}
-                alt={backgroundImages[2].caption || backgroundImages[2].name}
-                fill
-                style={{
-                  objectFit: 'cover'
-                }}
-              />
-            </Box>
-          )}
-          
-          {/* Bottom Right Corner Image */}
-          {backgroundImages[3] && (
-            <Box
-              sx={{
-                position: 'absolute',
-                bottom: '8%',
-                right: '3%',
-                width: '140px',
-                height: '100px',
-                borderRadius: 2,
-                overflow: 'hidden',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-                transform: 'rotate(15deg)',
-                zIndex: 1,
-                border: '2px solid white',
-              }}
-            >
-              <Image
-                src={backgroundImages[3].url}
-                alt={backgroundImages[3].caption || backgroundImages[3].name}
-                fill
-                style={{
-                  objectFit: 'cover'
-                }}
-              />
-            </Box>
-          )}
-        </>
-      )}
-
-      {/* Main Cover Content */}
-      <Box sx={{ 
-        flex: 1, 
-        p: 6, 
-        display: 'flex', 
-        flexDirection: 'column', 
-        justifyContent: 'center',
-        position: 'relative',
-        zIndex: 2,
-        fontSize: '14px',
-        textAlign: 'left'
-      }}>
-        {/* Feature Story Badge */}
-        <Box sx={{ mb: 4 }}>
-          <Chip 
-            label="FEATURE STORY" 
-            sx={{ 
-              bgcolor: '#ff6b35', 
-              color: 'white', 
-              fontWeight: 'bold',
-              fontSize: '0.75rem',
-              letterSpacing: 1
-            }} 
-          />
-        </Box>
-
-        {/* Main Headline */}
-        <Typography 
-          variant="h1" 
-          component="h1" 
-          sx={{ 
-            fontWeight: 900,
-            fontSize: { xs: '3rem', md: '4.5rem' },
-            lineHeight: 0.9,
-            mb: 3,
-            textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
-          }}
-        >
-          {(userDisplayName || page.userName || 'YOUR').toUpperCase()}&apos;S
-        </Typography>
-        <Typography 
-          variant="h1" 
-          component="h1" 
-          sx={{ 
-            fontWeight: 900,
-            fontSize: { xs: '2.5rem', md: '4rem' },
-            lineHeight: 0.9,
-            mb: 2,
-            color: '#ff6b35',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
-          }}
-        >
-          TRANSFORMATION
-        </Typography>
-        <Typography 
-          variant="h2" 
-          component="h2" 
-          sx={{ 
-            fontWeight: 300,
-            fontSize: { xs: '1.5rem', md: '2rem' },
-            mb: 4,
-            opacity: 0.9,
-            fontStyle: 'italic'
-          }}
-        >
-          A Journey of Growth and Self-Discovery
-        </Typography>
-
-        {/* Cover Stories */}
-        <Box sx={{ mt: 4 }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#ff6b35' }}>
-            INSIDE THIS ISSUE:
-          </Typography>
-          <Stack spacing={1}>
-            {sections.slice(0, 4).map((section) => (
-              <Typography key={section.id} variant="body1" sx={{ opacity: 0.9 }}>
-                • {section.title}: {section.entries.length} Breakthrough Moments
-              </Typography>
-            ))}
-          </Stack>
-        </Box>
-      </Box>
-
-      {/* Magazine Footer */}
-      <Box sx={{ p: 3, borderTop: '1px solid rgba(255,255,255,0.2)' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="body2" sx={{ opacity: 0.8 }}>
-            VOLUME 1 • ISSUE 1
-          </Typography>
-          <Typography variant="body2" sx={{ opacity: 0.8 }}>
-            {sections.reduce((total, section) => total + section.entries.length, 0)} STORIES
-          </Typography>
-        </Box>
-      </Box>
-
-      {/* Decorative Elements */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '20%',
-          right: '-10%',
-          width: '40%',
-          height: '60%',
-          background: 'radial-gradient(circle, rgba(255,107,53,0.1) 0%, transparent 70%)',
-          borderRadius: '50%',
-        }}
-      />
-    </Box>
-    );
-  };
-
-  const renderSectionIntro = (page: MagazinePage) => {
-    const section = page.section!;
-    const CategoryIcon = categoryIcons[section.id as keyof typeof categoryIcons] || SelfImprovement;
-    const categoryColor = categoryColors[section.id as keyof typeof categoryColors] || '#1976d2';
-
-    return (
-      <Box sx={{ height: '100%', p: 6, display: 'flex', flexDirection: 'column' }}>
-        {/* Header */}
-        <Box sx={{ mb: 6 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 4 }}>
-            <Box
-              sx={{
-                p: 2,
-                borderRadius: 3,
-                bgcolor: categoryColor,
-                color: 'white',
-              }}
-            >
-              <CategoryIcon sx={{ fontSize: 40 }} />
-            </Box>
-            <Typography variant="h2" component="h1" sx={{ fontWeight: 'bold', color: categoryColor }}>
-              {section.title}
-            </Typography>
-          </Box>
-          
-          <Typography variant="h5" color="text.secondary" sx={{ mb: 4, lineHeight: 1.6, fontSize: '14px', textAlign: 'left' }}>
-            {section.description}
-          </Typography>
-        </Box>
-
-        {/* Stats */}
-        <Box sx={{ mb: 6 }}>
-          <Paper sx={{ p: 4, bgcolor: 'grey.50' }}>
-            <Stack direction="row" spacing={4} justifyContent="center">
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h3" component="div" sx={{ fontWeight: 'bold', color: categoryColor }}>
-                  {section.entries.length}
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  Entries
-                </Typography>
-              </Box>
-              <Divider orientation="vertical" flexItem />
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h3" component="div" sx={{ fontWeight: 'bold', color: categoryColor }}>
-                  {section.insights.length}
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  Insights
-                </Typography>
-              </Box>
-            </Stack>
-          </Paper>
-        </Box>
-
-        {/* Preview insights */}
-        {section.insights.length > 0 && (
-          <Box sx={{ mt: 'auto' }}>
-            <Typography variant="h6" gutterBottom sx={{ color: categoryColor }}>
-              Key Insights Preview
-            </Typography>
-            <Stack spacing={2}>
-              {section.insights.slice(0, 3).map((insight, insightIndex) => (
-                <Box key={insightIndex} sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                  <Box
-                    sx={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: '50%',
-                      bgcolor: categoryColor,
-                      mt: 1,
-                      flexShrink: 0,
-                    }}
-                  />
-                  <Typography variant="body1" sx={{ fontStyle: 'italic', fontSize: '14px', textAlign: 'left' }}>
-                    {insight}
-                  </Typography>
-                </Box>
-              ))}
-            </Stack>
-          </Box>
-        )}
-      </Box>
-    );
-  };
-
-  const renderEntryPage = (page: MagazinePage) => {
-    const entry = page.content!;
-    const section = page.section!;
-    const CategoryIcon = categoryIcons[section.id as keyof typeof categoryIcons] || SelfImprovement;
-    const categoryColor = categoryColors[section.id as keyof typeof categoryColors] || '#1976d2';
-
-    return (
-      <Box sx={{ height: '100%', bgcolor: '#fafafa' }}>
+      <div className="h-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white relative overflow-hidden">
         {/* Magazine Header */}
-        <Box sx={{ 
-          p: 3, 
-          bgcolor: 'white', 
-          borderBottom: '3px solid',
-          borderColor: categoryColor,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <CategoryIcon sx={{ color: categoryColor, fontSize: 28 }} />
-            <Typography variant="h6" sx={{ fontWeight: 'bold', color: categoryColor, letterSpacing: 1 }}>
-              {section.title.toUpperCase()}
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <CalendarToday sx={{ fontSize: 16, color: 'text.secondary' }} />
-            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
-              {formatDate(entry.completedAt).toUpperCase()}
-            </Typography>
-          </Box>
-        </Box>
+        <div className="absolute top-0 left-0 right-0 p-6 border-b border-white/20">
+          <div className="flex justify-between items-center">
+            <div className="text-sm font-bold tracking-widest">PERSONAL DEVELOPMENT QUARTERLY</div>
+            <div className="text-sm opacity-80">
+              {mounted ? new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase() : ''}
+            </div>
+          </div>
+        </div>
 
-        {/* Magazine Layout with Flexbox */}
-        <Box sx={{ display: 'flex', height: 'calc(100% - 80px)', overflow: 'hidden' }}>
-          {/* Main Article Column */}
-          <Box sx={{ flex: 2, p: 4, overflowY: 'auto', height: '100%' }}>
-            {/* Article Header */}
-            <Box sx={{ mb: 4 }}>
-              <Typography 
-                variant="h3" 
-                component="h1" 
-                sx={{ 
-                  fontWeight: 900,
-                  lineHeight: 1.1,
-                  mb: 2,
-                  color: '#1a1a1a'
-                }}
-              >
-                {entry.exerciseTitle}
-              </Typography>
-              
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                <Avatar sx={{ bgcolor: categoryColor, width: 32, height: 32 }}>
-                  <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
-                    {entry.responseType.charAt(0).toUpperCase()}
-                  </Typography>
-                </Avatar>
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
-                    Personal Reflection
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {entry.responseType.toUpperCase()} RESPONSE
-                  </Typography>
-                </Box>
-                {entry.mood && (
-                  <Chip 
-                    label={entry.mood} 
-                    size="small" 
-                    sx={{ 
-                      bgcolor: `${categoryColor}20`,
-                      color: categoryColor,
-                      fontWeight: 'bold'
-                    }} 
-                  />
-                )}
-              </Box>
-            </Box>
+        {/* Background Images */}
+        {featuredImages.map((entry, idx) => 
+          entry.images?.map((image, imgIdx) => (
+            <div
+              key={`${idx}-${imgIdx}`}
+              className={`absolute opacity-20 ${
+                idx === 0 ? 'top-20 right-10 w-48 h-32 rotate-12' :
+                idx === 1 ? 'bottom-32 left-20 w-40 h-28 -rotate-6' :
+                'top-40 left-1/2 w-36 h-24 rotate-3'
+              }`}
+            >
+              <img src={image.url} alt="" className="w-full h-full object-cover rounded-lg" />
+            </div>
+          ))
+        )}
 
-            {/* Article Content */}
-            <Box sx={{ mb: 4 }}>
-              {entry.responseType === 'text' ? (
-                <Box>
-                  {/* Drop Cap Effect */}
-                  <Typography 
-                    variant="body1" 
-                    sx={{ 
-                      fontSize: '14px',
-                      lineHeight: 1.8,
-                      textAlign: 'left',
-                      columnCount: { md: 2 },
-                      columnGap: 4,
-                      columnRule: '1px solid #e0e0e0',
-                      '&::first-letter': {
-                        fontSize: '4rem',
-                        fontWeight: 'bold',
-                        float: 'left',
-                        lineHeight: 1,
-                        marginRight: '8px',
-                        marginTop: '4px',
-                        color: categoryColor
-                      }
-                    }}
-                  >
-                    {entry.response}
-                  </Typography>
-                </Box>
-              ) : entry.responseType === 'audio' ? (
-                <Box>
-                  <Card sx={{ mb: 3, overflow: 'hidden' }}>
-                    <CardMedia sx={{ p: 3, bgcolor: `${categoryColor}10` }}>
-                      <AudioPlayer 
-                        src="https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"
-                        title={`Audio response for ${entry.exerciseTitle}`}
-                      />
-                    </CardMedia>
-                  </Card>
-                  <Typography 
-                    variant="body1" 
-                    sx={{ 
-                      fontSize: '14px',
-                      lineHeight: 1.8,
-                      fontStyle: 'italic',
-                      textAlign: 'left',
-                      columnCount: { md: 2 },
-                      columnGap: 4,
-                      columnRule: '1px solid #e0e0e0'
-                    }}
-                  >
-                    {entry.response}
-                  </Typography>
-                </Box>
-              ) : entry.responseType === 'video' ? (
-                <Box>
-                  <Card sx={{ mb: 3, overflow: 'hidden' }}>
-                    <CardMedia sx={{ p: 2, bgcolor: '#000' }}>
-                      <VideoPlayer 
-                        src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-                        title={`Video response for ${entry.exerciseTitle}`}
-                      />
-                    </CardMedia>
-                  </Card>
-                  <Typography 
-                    variant="body1" 
-                    sx={{ 
-                      fontSize: '14px',
-                      lineHeight: 1.8,
-                      fontStyle: 'italic',
-                      textAlign: 'left',
-                      columnCount: { md: 2 },
-                      columnGap: 4,
-                      columnRule: '1px solid #e0e0e0'
-                    }}
-                  >
-                    {entry.response}
-                  </Typography>
-                </Box>
-              ) : null}
-            </Box>
-
-            {/* Images in Magazine Style */}
-            {entry.images && entry.images.length > 0 && (
-              <Box sx={{ mt: 4, mb: 4 }}>
-                <ImageGallery 
-                  images={entry.images} 
-                  title="Visual Elements"
-                  variant="magazine"
-                  maxHeight={250}
-                />
-              </Box>
-            )}
-
-            {/* Tags as Magazine Keywords */}
-            {entry.tags && entry.tags.length > 0 && (
-              <Box sx={{ mt: 4, pt: 3, borderTop: '1px solid #e0e0e0' }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 2, color: categoryColor }}>
-                  KEYWORDS:
-                </Typography>
-                <Stack direction="row" spacing={1} flexWrap="wrap">
-                  {entry.tags.map((tag, tagIndex) => (
-                    <Typography
-                      key={tagIndex}
-                      variant="caption"
-                      sx={{ 
-                        fontWeight: 'bold',
-                        color: 'text.secondary',
-                        textTransform: 'uppercase',
-                        letterSpacing: 1
-                      }}
-                    >
-                      {tag}
-                      {tagIndex < entry.tags!.length - 1 && ' • '}
-                    </Typography>
-                  ))}
-                </Stack>
-              </Box>
-            )}
-          </Box>
-
-          {/* Sidebar */}
-          <Box sx={{ flex: 1, bgcolor: 'white', p: 4, borderLeft: '1px solid #e0e0e0', overflowY: 'auto', height: '100%' }}>
-            {/* Insights Sidebar */}
-            {entry.insights && entry.insights.length > 0 && (
-              <Box>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    fontWeight: 'bold', 
-                    mb: 3,
-                    color: categoryColor,
-                    textTransform: 'uppercase',
-                    letterSpacing: 1,
-                    borderBottom: `2px solid ${categoryColor}`,
-                    pb: 1
-                  }}
-                >
-                  Key Insights
-                </Typography>
-                
-                <Stack spacing={3}>
-                  {entry.insights.map((insight, insightIndex) => (
-                    <Box key={insightIndex}>
-                      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                        <FormatQuote sx={{ color: categoryColor, fontSize: 20, mt: 0.5 }} />
-                        <Typography 
-                          variant="body2" 
-                          sx={{ 
-                            lineHeight: 1.6,
-                            fontStyle: 'italic',
-                            fontSize: '14px',
-                            textAlign: 'left'
-                          }}
-                        >
-                          {insight}
-                        </Typography>
-                      </Box>
-                      {insightIndex < entry.insights!.length - 1 && (
-                        <Divider sx={{ mt: 2, opacity: 0.3 }} />
-                      )}
-                    </Box>
-                  ))}
-                </Stack>
-              </Box>
-            )}
-
-            {/* Section Info Box */}
-            <Box sx={{ mt: 4, p: 3, bgcolor: `${categoryColor}08`, borderRadius: 2 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 2, color: categoryColor }}>
-                ABOUT THIS SECTION
-              </Typography>
-              <Typography variant="body2" sx={{ lineHeight: 1.6, mb: 2, fontSize: '14px', textAlign: 'left' }}>
-                {section.description}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {section.entries.length} total entries in {section.title}
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-      </Box>
+        {/* Main Content */}
+        <div className="absolute inset-0 flex flex-col justify-center items-center text-center p-12">
+          <div className="max-w-4xl">
+            <h1 className="text-6xl md:text-8xl font-bold mb-4 leading-tight">
+              <span className="bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
+                {page.title}
+              </span>
+            </h1>
+            <h2 className="text-2xl md:text-3xl mb-8 opacity-90 font-light">
+              {page.subtitle}
+            </h2>
+            <p className="text-lg opacity-80 max-w-2xl mx-auto leading-relaxed">
+              {page.narrative}
+            </p>
+            
+            {/* Stats Bar */}
+            <div className="flex justify-center space-x-8 mt-12 pt-8 border-t border-white/20">
+              <div className="text-center">
+                <div className="text-2xl font-bold">{journeyData.totalEntries}</div>
+                <div className="text-sm opacity-70">Moments</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold">{journeyData.keyThemes.length}</div>
+                <div className="text-sm opacity-70">Themes</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold">{journeyData.allInsights.length}</div>
+                <div className="text-sm opacity-70">Insights</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   };
 
-  const renderInsightsPage = (page: MagazinePage) => {
-    const section = page.section!;
-    const categoryColor = categoryColors[section.id as keyof typeof categoryColors] || '#1976d2';
+  const renderJourneyMap = (page: MagazinePage) => {
+    return (
+      <div className="h-full bg-gradient-to-br from-indigo-50 to-purple-50 p-8">
+        <div className="h-full flex flex-col">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">{page.title}</h1>
+            <h2 className="text-xl text-gray-600 mb-4">{page.subtitle}</h2>
+            <p className="text-gray-700 max-w-2xl mx-auto">{page.narrative}</p>
+          </div>
+
+          {/* Timeline Visualization */}
+          <div className="flex-1 relative">
+            <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-indigo-600 via-purple-600 to-pink-600 transform -translate-x-1/2"></div>
+            
+            <div className="space-y-8">
+              {page.content?.map((entry, index) => (
+                <div key={entry.id} className={`flex ${index % 2 === 0 ? 'justify-start' : 'justify-end'} relative`}>
+                  <div className={`w-80 ${index % 2 === 0 ? 'mr-8' : 'ml-8'}`}>
+                    <div className="bg-white rounded-lg shadow-lg p-4 border border-gray-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize bg-gradient-to-r ${getCategoryColor(entry.category)} text-white`}>
+                          {entry.category}
+                        </span>
+                        <span className="text-xs text-gray-500">{formatDate(entry.completedAt)}</span>
+                      </div>
+                      <h3 className="font-semibold text-gray-900 mb-1">{entry.exerciseTitle}</h3>
+                      <p className="text-sm text-gray-600 line-clamp-2">{entry.response}</p>
+                      
+                      {/* Media indicators */}
+                      <div className="flex space-x-2 mt-2">
+                        {entry.images?.length > 0 && (
+                          <span className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                            <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                            </svg>
+                          </span>
+                        )}
+                        {entry.videos?.length > 0 && (
+                          <span className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                            <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                            </svg>
+                          </span>
+                        )}
+                        {entry.audioFiles?.length > 0 && (
+                          <span className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217z" clipRule="evenodd" />
+                            </svg>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Timeline dot */}
+                  <div className={`absolute top-4 left-1/2 w-4 h-4 rounded-full border-4 border-white transform -translate-x-1/2 bg-gradient-to-r ${getCategoryColor(entry.category)}`}></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderVisionBoard = (page: MagazinePage) => {
+    const allImages = page.content?.flatMap(entry => entry.images || []) || [];
+    
+    return (
+      <div className="h-full bg-white p-8">
+        <div className="h-full flex flex-col">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">{page.title}</h1>
+            <h2 className="text-xl text-gray-600 mb-4">{page.subtitle}</h2>
+            <p className="text-gray-700 max-w-2xl mx-auto italic">{page.narrative}</p>
+          </div>
+
+          {/* Image Grid */}
+          <div className="flex-1 relative">
+            <div className="absolute inset-0 columns-3 gap-4 space-y-4">
+              {allImages.map((image, index) => (
+                <div key={image.id} className="break-inside-avoid relative group">
+                  <img 
+                    src={image.url} 
+                    alt={image.caption || image.name}
+                    className="w-full rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 rounded-lg flex items-end">
+                    <div className="p-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <p className="text-sm font-medium">{image.caption}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderMilestone = (page: MagazinePage) => {
+    const entry = page.content?.[0];
+    if (!entry) return null;
 
     return (
-      <Box sx={{ height: '100%', p: 6, display: 'flex', flexDirection: 'column' }}>
-        <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: categoryColor, mb: 4 }}>
-          {section.title} Insights
-        </Typography>
-        
-        <Typography variant="h6" gutterBottom sx={{ mb: 4 }}>
-          Key patterns and discoveries from your {section.title.toLowerCase()} journey
-        </Typography>
+      <div className={`h-full bg-gradient-to-br ${getCategoryColor(entry.category)} text-white p-8`}>
+        <div className="h-full flex flex-col justify-center">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="mb-6">
+              <span className="bg-white/20 px-4 py-2 rounded-full text-sm font-medium">
+                {page.title}
+              </span>
+            </div>
+            
+            <h1 className="text-5xl font-bold mb-6">{page.subtitle}</h1>
+            <p className="text-xl opacity-90 mb-8 italic">{page.narrative}</p>
+            
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 text-left">
+              <p className="text-lg leading-relaxed mb-6">{entry.response}</p>
+              
+              {/* Media Content */}
+              {entry.images && entry.images.length > 0 && (
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  {entry.images.slice(0, 4).map(image => (
+                    <img key={image.id} src={image.url} alt={image.caption || ''} className="w-full h-32 object-cover rounded-lg" />
+                  ))}
+                </div>
+              )}
+              
+              {entry.videos && entry.videos.length > 0 && (
+                <div className="mb-6">
+                  <VideoPlayer src={entry.videos[0].url} title={entry.videos[0].name} />
+                </div>
+              )}
+              
+              {entry.audioFiles && entry.audioFiles.length > 0 && (
+                <div className="mb-6">
+                  <AudioPlayer src={entry.audioFiles[0].url} title={entry.audioFiles[0].name} />
+                </div>
+              )}
+              
+              {/* Insights */}
+              {entry.insights && entry.insights.length > 0 && (
+                <div className="border-t border-white/20 pt-6">
+                  <h3 className="text-lg font-semibold mb-4">Key Insights</h3>
+                  <div className="space-y-2">
+                    {entry.insights.map((insight, idx) => (
+                      <p key={idx} className="flex items-start text-sm">
+                        <span className="w-2 h-2 bg-white rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                        {insight}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
-        <Stack spacing={4} sx={{ flex: 1 }}>
-          {section.insights.map((insight, insightIndex) => (
-            <Paper key={insightIndex} sx={{ p: 4, bgcolor: `${categoryColor}08`, borderLeft: 4, borderColor: categoryColor }}>
-              <Typography variant="h6" gutterBottom sx={{ color: categoryColor }}>
-                Insight #{insightIndex + 1}
-              </Typography>
-              <Typography variant="body1" sx={{ fontSize: '14px', lineHeight: 1.7, textAlign: 'left' }}>
-                {insight}
-              </Typography>
-            </Paper>
-          ))}
-        </Stack>
-      </Box>
+  const renderReflectionSpread = (page: MagazinePage) => {
+    return (
+      <div className="h-full bg-gradient-to-br from-gray-50 to-blue-50 p-8">
+        <div className="h-full flex">
+          {/* Left Column - Theme Overview */}
+          <div className="w-1/3 pr-8">
+            <div className={`h-full bg-gradient-to-br ${getCategoryColor(page.theme || '')} text-white rounded-2xl p-8`}>
+              <h1 className="text-3xl font-bold mb-4">{page.title}</h1>
+              <h2 className="text-lg opacity-90 mb-6">{page.subtitle}</h2>
+              <p className="text-sm leading-relaxed italic mb-8">{page.narrative}</p>
+              
+              <div className="space-y-4">
+                <div>
+                  <div className="text-2xl font-bold">{page.content?.length}</div>
+                  <div className="text-sm opacity-80">Entries</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{page.content?.flatMap(e => e.insights || []).length}</div>
+                  <div className="text-sm opacity-80">Insights</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{page.content?.flatMap(e => e.images || []).length}</div>
+                  <div className="text-sm opacity-80">Images</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Right Column - Content Flow */}
+          <div className="w-2/3 space-y-6 overflow-y-auto max-h-full">
+            {page.content?.map((entry, index) => (
+              <div key={entry.id} className="bg-white rounded-xl shadow-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">{entry.exerciseTitle}</h3>
+                  <span className="text-sm text-gray-500">{formatDate(entry.completedAt)}</span>
+                </div>
+                
+                <p className="text-gray-700 mb-4 leading-relaxed">{entry.response}</p>
+                
+                {/* Mixed Media Layout */}
+                <div className="grid grid-cols-3 gap-4">
+                  {/* Images */}
+                  {entry.images?.slice(0, 2).map(image => (
+                    <img key={image.id} src={image.url} alt={image.caption || ''} className="w-full h-20 object-cover rounded-lg" />
+                  ))}
+                  
+                  {/* Video/Audio in remaining space */}
+                  {entry.videos?.length > 0 && (
+                    <div className="col-span-1">
+                      <VideoPlayer src={entry.videos[0].url} title={entry.videos[0].name} />
+                    </div>
+                  )}
+                  
+                  {entry.audioFiles?.length > 0 && !entry.videos?.length && (
+                    <div className="col-span-1">
+                      <AudioPlayer src={entry.audioFiles[0].url} title={entry.audioFiles[0].name} />
+                    </div>
+                  )}
+                  
+                  {/* Documents */}
+                  {entry.documents?.slice(0, 1).map(doc => (
+                    <div key={doc.id} className="col-span-1">
+                      <DocumentThumbnail document={doc} showDownload={true} showRemove={false} />
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Key insights for this entry */}
+                {entry.insights && entry.insights.length > 0 && (
+                  <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="space-y-1">
+                      {entry.insights.slice(0, 2).map((insight, idx) => (
+                        <p key={idx} className="text-sm text-gray-600 flex items-start">
+                          <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                          {insight}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderGrowthStory = (page: MagazinePage) => {
+    const getMediaIcon = () => {
+      switch (page.mediaFocus) {
+        case 'videos': return '🎥';
+        case 'audio': return '🎵';
+        case 'documents': return '📄';
+        default: return '📸';
+      }
+    };
+
+    return (
+      <div className="h-full bg-gradient-to-br from-purple-50 to-indigo-50 p-8">
+        <div className="h-full flex flex-col">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="text-4xl mb-4">{getMediaIcon()}</div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">{page.title}</h1>
+            <h2 className="text-xl text-gray-600 mb-4">{page.subtitle}</h2>
+            <p className="text-gray-700 max-w-2xl mx-auto italic">{page.narrative}</p>
+          </div>
+
+          {/* Media Grid */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="grid grid-cols-2 gap-6">
+              {page.content?.map((entry, index) => (
+                <div key={entry.id} className="bg-white rounded-xl shadow-lg overflow-hidden">
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">{entry.exerciseTitle}</h3>
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{entry.response}</p>
+                  </div>
+                  
+                  {/* Media Content */}
+                  <div className="px-4 pb-4">
+                    {page.mediaFocus === 'videos' && entry.videos?.map(video => (
+                      <VideoPlayer key={video.id} src={video.url} title={video.name} />
+                    ))}
+                    
+                    {page.mediaFocus === 'audio' && entry.audioFiles?.map(audio => (
+                      <AudioPlayer key={audio.id} src={audio.url} title={audio.name} />
+                    ))}
+                    
+                    {page.mediaFocus === 'documents' && entry.documents?.map(doc => (
+                      <DocumentThumbnail key={doc.id} document={doc} showDownload={true} showRemove={false} />
+                    ))}
+                    
+                    {page.mediaFocus === 'images' && (
+                      <div className="grid grid-cols-2 gap-2">
+                        {entry.images?.slice(0, 4).map(image => (
+                          <img key={image.id} src={image.url} alt={image.caption || ''} className="w-full h-24 object-cover rounded-lg" />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="px-4 pb-4 text-xs text-gray-500">
+                    {formatDate(entry.completedAt)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderTransformation = (page: MagazinePage) => {
+    return (
+      <div className="h-full bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 p-8">
+        <div className="h-full flex flex-col justify-center text-center">
+          <div className="max-w-4xl mx-auto">
+            <div className="mb-8">
+              <div className="w-24 h-24 bg-gradient-to-r from-amber-600 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h1 className="text-5xl font-bold text-gray-900 mb-4">{page.title}</h1>
+              <h2 className="text-2xl text-gray-600 mb-6">{page.subtitle}</h2>
+              <p className="text-lg text-gray-700 leading-relaxed max-w-3xl mx-auto italic mb-12">
+                {page.narrative}
+              </p>
+            </div>
+
+            {/* Recent Journey Summary */}
+            <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-6">Your Current Trajectory</h3>
+              <div className="grid grid-cols-3 gap-8">
+                {page.content?.slice(0, 3).map((entry, index) => (
+                  <div key={entry.id} className="text-center">
+                    <div className={`w-16 h-16 bg-gradient-to-r ${getCategoryColor(entry.category)} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                      <span className="text-white font-bold text-lg">{index + 1}</span>
+                    </div>
+                    <h4 className="font-semibold text-gray-900 mb-2">{entry.exerciseTitle}</h4>
+                    <p className="text-sm text-gray-600 line-clamp-3">{entry.response}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Key Insights Summary */}
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl p-8">
+              <h3 className="text-2xl font-semibold mb-6">Wisdom Gained</h3>
+              <div className="grid grid-cols-2 gap-6 text-left">
+                {journeyData.allInsights.slice(-6).map((insight, index) => (
+                  <p key={index} className="flex items-start text-sm">
+                    <span className="w-2 h-2 bg-white rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                    {insight}
+                  </p>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   };
 
@@ -766,88 +710,72 @@ export default function MagazineLayout({ sections, userName = 'Your', userDispla
     switch (page.type) {
       case 'cover':
         return renderCoverPage(page);
-      case 'section-intro':
-        return renderSectionIntro(page);
-      case 'entry':
-        return renderEntryPage(page);
-      case 'insights':
-        return renderInsightsPage(page);
+      case 'journey-map':
+        return renderJourneyMap(page);
+      case 'vision-board':
+        return renderVisionBoard(page);
+      case 'milestone':
+        return renderMilestone(page);
+      case 'reflection-spread':
+        return renderReflectionSpread(page);
+      case 'growth-story':
+        return renderGrowthStory(page);
+      case 'transformation':
+        return renderTransformation(page);
       default:
-        return null;
+        return <div className="h-full bg-gray-100 flex items-center justify-center">Page type not implemented</div>;
     }
   };
 
-  return (
-    <Container maxWidth="lg" sx={{ py: 4, fontSize: '14px', textAlign: 'left' }}>
-      <Box sx={{ position: 'relative', height: '90vh', minHeight: '800px' }}>
-        {/* Magazine Page */}
-        <Paper
-          ref={containerRef}
-          sx={{
-            height: '100%',
-            position: 'relative',
-            overflow: 'hidden',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-            borderRadius: 2,
-            transition: 'transform 0.3s ease',
-            '&:hover': {
-              transform: 'translateY(-2px)',
-              boxShadow: '0 25px 50px rgba(0,0,0,0.15)',
-            },
-          }}
-        >
-          {renderPage(pages[currentPage])}
-        </Paper>
+  if (pages.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">No Content Yet</h2>
+          <p className="text-gray-600">Complete some exercises to create your magazine story!</p>
+        </div>
+      </div>
+    );
+  }
 
-        {/* Navigation */}
-        <Box
-          sx={{
-            position: 'absolute',
-            bottom: -60,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 2,
-            bgcolor: 'white',
-            p: 2,
-            borderRadius: 3,
-            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-          }}
+  return (
+    <div className="relative w-full h-screen bg-gray-100">
+      {/* Magazine Page */}
+      <div className="absolute inset-4 bg-white shadow-2xl rounded-lg overflow-hidden">
+        {renderPage(pages[currentPage])}
+      </div>
+
+      {/* Navigation */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 bg-black/70 backdrop-blur-sm rounded-full px-6 py-3">
+        <button
+          onClick={prevPage}
+          disabled={currentPage === 0}
+          className="p-2 rounded-full bg-white/20 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-all"
         >
-          <IconButton 
-            onClick={prevPage} 
-            disabled={currentPage === 0}
-            sx={{ 
-              bgcolor: currentPage === 0 ? 'grey.100' : 'primary.main',
-              color: currentPage === 0 ? 'grey.400' : 'white',
-              '&:hover': {
-                bgcolor: currentPage === 0 ? 'grey.100' : 'primary.dark',
-              },
-            }}
-          >
-            <ChevronLeft />
-          </IconButton>
-          
-          <Typography variant="body2" sx={{ mx: 2, minWidth: '80px', textAlign: 'center' }}>
-            {currentPage + 1} of {totalPages}
-          </Typography>
-          
-          <IconButton 
-            onClick={nextPage} 
-            disabled={currentPage === totalPages - 1}
-            sx={{ 
-              bgcolor: currentPage === totalPages - 1 ? 'grey.100' : 'primary.main',
-              color: currentPage === totalPages - 1 ? 'grey.400' : 'white',
-              '&:hover': {
-                bgcolor: currentPage === totalPages - 1 ? 'grey.100' : 'primary.dark',
-              },
-            }}
-          >
-            <ChevronRight />
-          </IconButton>
-        </Box>
-      </Box>
-    </Container>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        
+        <span className="text-white text-sm font-medium px-4">
+          {currentPage + 1} of {totalPages}
+        </span>
+        
+        <button
+          onClick={nextPage}
+          disabled={currentPage === totalPages - 1}
+          className="p-2 rounded-full bg-white/20 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-all"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Page Indicator */}
+      <div className="absolute top-8 right-8 bg-black/70 backdrop-blur-sm rounded-full px-4 py-2">
+        <span className="text-white text-sm font-medium">{pages[currentPage]?.title}</span>
+      </div>
+    </div>
   );
 } 

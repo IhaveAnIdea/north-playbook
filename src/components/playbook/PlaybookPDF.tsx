@@ -46,8 +46,9 @@ const PrintablePlaybook = React.forwardRef<HTMLDivElement, PrintablePlaybookProp
       setMounted(true);
     }, []);
 
-    const formatDate = (date: Date) => {
-      return date.toLocaleDateString('en-US', {
+    const formatDate = (date: Date | string) => {
+      const dateObj = date instanceof Date ? date : new Date(date);
+      return dateObj.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
