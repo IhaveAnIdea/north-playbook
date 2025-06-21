@@ -138,6 +138,18 @@ export default function ExercisesPage() {
 
         const progress = calculateExerciseProgress(requirements, latestResponse);
         
+        // DEBUG: Log progress calculation details
+        console.log(`[DEBUG] Exercise ${exercise.title}:`);
+        console.log('  Requirements:', requirements);
+        console.log('  Latest Response:', latestResponse);
+        console.log('  Progress State:', progress.state);
+        console.log('  Progress Details:', {
+          completedRequirements: progress.completedRequirements,
+          totalRequirements: progress.totalRequirements,
+          hasAllRequirements: progress.hasAllRequirements,
+          missingRequirements: progress.missingRequirements
+        });
+        
         // Map new states to the existing interface
         let status: 'open' | 'started' | 'completed';
         switch (progress.state) {
@@ -151,6 +163,8 @@ export default function ExercisesPage() {
             status = 'completed';
             break;
         }
+        
+        console.log('  Final Status:', status);
 
         // Get recent images from the most recent responses (up to 3 images)
         const recentImages: string[] = [];
