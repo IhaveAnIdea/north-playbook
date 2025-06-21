@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { PlaybookSection, PlaybookEntry } from '@/data/playbook';
 import AudioPlayer from '@/components/media/AudioPlayer';
 import VideoPlayer from '@/components/media/VideoPlayer';
-import DocumentThumbnail from '../media/DocumentThumbnail';
+import DocumentThumbnail from '@/components/media/DocumentThumbnail';
 
 // Types for enhanced magazine content
 interface MentorAnalysis {
