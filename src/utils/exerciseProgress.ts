@@ -136,6 +136,18 @@ export function calculateExerciseProgress(
     state = 'incomplete';
     console.log('    Decision: incomplete (has data but not completed)');
   }
+  
+  // SPECIAL CASE: If an exercise has no requirements and no response, it should be 'unstarted'
+  // If it has no requirements but has a response, it should be 'completed'
+  if (totalRequirements === 0) {
+    if (!response || (!response.responseText && !response.imageS3Keys?.length && !response.audioS3Key && !response.videoS3Key && !response.documentS3Keys?.length)) {
+      state = 'unstarted';
+      console.log('    Decision OVERRIDE: unstarted (no requirements, no response)');
+    } else {
+      state = 'completed';
+      console.log('    Decision OVERRIDE: completed (no requirements, has response)');
+    }
+  }
 
   // Determine edit permissions
   const canEdit = state !== 'completed'; // Can only edit if not completed
