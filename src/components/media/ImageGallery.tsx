@@ -270,9 +270,7 @@ export default function ImageGallery({
         fullWidth
       >
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6">
-            {selectedImage?.caption || selectedImage?.name}
-          </Typography>
+          {selectedImage?.caption || selectedImage?.name}
           <IconButton onClick={handleCloseDialog}>
             <Close />
           </IconButton>

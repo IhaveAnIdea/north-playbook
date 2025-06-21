@@ -29,13 +29,16 @@ import {
   Settings,
   Logout,
   North as NorthIcon,
+  AdminPanelSettings,
 } from '@mui/icons-material';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export default function Navbar() {
   const { user, signOut } = useAuthenticator((context) => [context.user]);
+  const { isAdmin } = useUserRole();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const theme = useTheme();
@@ -60,12 +63,24 @@ export default function Navbar() {
     setMobileDrawerOpen(!mobileDrawerOpen);
   };
 
-  const navigationItems = [
+  // Base navigation items for all users
+  const baseNavigationItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
     { text: 'Exercises', icon: <Assignment />, path: '/exercises' },
     { text: 'My Playbook', icon: <LibraryBooks />, path: '/playbook' },
     { text: 'Settings', icon: <Settings />, path: '/settings' },
   ];
+
+  // Admin-only navigation items
+  const adminNavigationItems = [
+    { text: 'Admin Panel', icon: <AdminPanelSettings />, path: '/admin' },
+    { text: 'Manage Exercises', icon: <Assignment />, path: '/exercises/manage' },
+  ];
+
+  // Combine navigation items based on user role
+  const navigationItems = isAdmin 
+    ? [...baseNavigationItems, ...adminNavigationItems] 
+    : baseNavigationItems;
 
   const drawer = (
     <Box sx={{ width: 250 }} role="presentation">

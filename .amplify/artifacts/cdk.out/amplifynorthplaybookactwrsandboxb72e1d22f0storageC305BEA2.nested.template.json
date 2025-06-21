@@ -265,10 +265,460 @@
     "aws:cdk:path": "amplify-northplaybook-actwr-sandbox-b72e1d22f0/storage/NORTH_PLAYBOOK_STORAGE_BUCKET_NAMEParameter/Resource"
    }
   },
+  "amplifynorthplaybookactwrsandboxb72e1d22f0storageAccess4FDE2B4C1": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "s3:GetObject",
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          {
+           "Fn::GetAtt": [
+            "northplaybookstorageBucket394FA7D5",
+            "Arn"
+           ]
+          },
+          "/public/*"
+         ]
+        ]
+       }
+      },
+      {
+       "Action": "s3:ListBucket",
+       "Condition": {
+        "StringLike": {
+         "s3:prefix": [
+          "public/*",
+          "public/"
+         ]
+        }
+       },
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "northplaybookstorageBucket394FA7D5",
+         "Arn"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "amplifynorthplaybookactwrsandboxb72e1d22f0storageAccess4FDE2B4C1",
+    "Roles": [
+     {
+      "Ref": "referencetoamplifynorthplaybookactwrsandboxb72e1d22f0authNestedStackauthNestedStackResourceD1FB529COutputsamplifynorthplaybookactwrsandboxb72e1d22f0authamplifyAuthunauthenticatedUserRole10C0CDABRef"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-northplaybook-actwr-sandbox-b72e1d22f0/storage/amplify-northplaybook-actwr-sandbox-b72e1d22f0--storageAccess4/Resource"
+   }
+  },
+  "amplifynorthplaybookactwrsandboxb72e1d22f0storageAccess54F2C0C97": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "s3:GetObject",
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/public/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/users/playbook/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/users/profile/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/exercise-responses/images/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/exercise-responses/audio/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/exercise-responses/video/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/exercise-responses/documents/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/temp/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": "s3:ListBucket",
+       "Condition": {
+        "StringLike": {
+         "s3:prefix": [
+          "public/*",
+          "public/",
+          "users/playbook/${cognito-identity.amazonaws.com:sub}/*",
+          "users/playbook/${cognito-identity.amazonaws.com:sub}/",
+          "users/profile/${cognito-identity.amazonaws.com:sub}/*",
+          "users/profile/${cognito-identity.amazonaws.com:sub}/",
+          "exercise-responses/images/${cognito-identity.amazonaws.com:sub}/*",
+          "exercise-responses/images/${cognito-identity.amazonaws.com:sub}/",
+          "exercise-responses/audio/${cognito-identity.amazonaws.com:sub}/*",
+          "exercise-responses/audio/${cognito-identity.amazonaws.com:sub}/",
+          "exercise-responses/video/${cognito-identity.amazonaws.com:sub}/*",
+          "exercise-responses/video/${cognito-identity.amazonaws.com:sub}/",
+          "exercise-responses/documents/${cognito-identity.amazonaws.com:sub}/*",
+          "exercise-responses/documents/${cognito-identity.amazonaws.com:sub}/",
+          "temp/${cognito-identity.amazonaws.com:sub}/*",
+          "temp/${cognito-identity.amazonaws.com:sub}/"
+         ]
+        }
+       },
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "northplaybookstorageBucket394FA7D5",
+         "Arn"
+        ]
+       }
+      },
+      {
+       "Action": "s3:PutObject",
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/public/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/users/playbook/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/users/profile/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/exercise-responses/images/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/exercise-responses/audio/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/exercise-responses/video/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/exercise-responses/documents/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/temp/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": "s3:DeleteObject",
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/users/playbook/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/users/profile/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/exercise-responses/images/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/exercise-responses/audio/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/exercise-responses/video/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/exercise-responses/documents/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "northplaybookstorageBucket394FA7D5",
+             "Arn"
+            ]
+           },
+           "/temp/${cognito-identity.amazonaws.com:sub}/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "amplifynorthplaybookactwrsandboxb72e1d22f0storageAccess54F2C0C97",
+    "Roles": [
+     {
+      "Ref": "referencetoamplifynorthplaybookactwrsandboxb72e1d22f0authNestedStackauthNestedStackResourceD1FB529COutputsamplifynorthplaybookactwrsandboxb72e1d22f0authamplifyAuthauthenticatedUserRole049BEB88Ref"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-northplaybook-actwr-sandbox-b72e1d22f0/storage/amplify-northplaybook-actwr-sandbox-b72e1d22f0--storageAccess5/Resource"
+   }
+  },
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/12KwQ6CMBBEv8V7WUE96FE5a4h8gKnt2qzY1nQXiCH8uzEYNZ7mvZlZQLFZQz7TPWfGNtmNzjAckAVtLdo0Svd8GngJw641DYoqL+FNU1TxRubxrScfFbOHoZZEwVU6aY+C6fX6yDiqsmWJ/ogc22Twtf7yXt/vFNzfq0qxI4tppxnVlhmlFu0ouFGFaBGuPO8WORQryGdXJspSG4Q8wnHKJ5/NMxPxAAAA"
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/12LSw6CMBCGz+K+jPhY6FJda4gcwIxlJCO2NZ0BYhrubgxGjavvf85htl5BPsFeMls12Y3PkA4kSlWpaBuDvZySLCBtW9uQmt3Fv9WIItzYPr7x6Acj4iCVGtnXBUZ0pBRfq48ZDKOD9P2/n4PZtaLBHUlCGy29ql+9x/udff23KmLouKK4RSGzESEtFWv29WB8qAiuMu3mOcyWkE+uwpzF1is7guPIJxj9hUoIAQAA"
    },
    "Metadata": {
     "aws:cdk:path": "amplify-northplaybook-actwr-sandbox-b72e1d22f0/storage/CDKMetadata/Default"
@@ -670,6 +1120,21 @@
      ]
     }
    ]
+  }
+ },
+ "Parameters": {
+  "referencetoamplifynorthplaybookactwrsandboxb72e1d22f0authNestedStackauthNestedStackResourceD1FB529COutputsamplifynorthplaybookactwrsandboxb72e1d22f0authamplifyAuthunauthenticatedUserRole10C0CDABRef": {
+   "Type": "String"
+  },
+  "referencetoamplifynorthplaybookactwrsandboxb72e1d22f0authNestedStackauthNestedStackResourceD1FB529COutputsamplifynorthplaybookactwrsandboxb72e1d22f0authamplifyAuthauthenticatedUserRole049BEB88Ref": {
+   "Type": "String"
+  }
+ },
+ "Outputs": {
+  "amplifynorthplaybookactwrsandboxb72e1d22f0storagenorthplaybookstorageBucket33D44BEBRef": {
+   "Value": {
+    "Ref": "northplaybookstorageBucket394FA7D5"
+   }
   }
  }
 }

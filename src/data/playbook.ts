@@ -1,4 +1,6 @@
 import { ImageData } from '@/components/media/ImageUpload';
+import { VideoData } from '@/components/media/VideoRecordUpload';
+import { DocumentData } from '@/components/media/DocumentThumbnail';
 
 export interface PlaybookEntry {
   id: string;
@@ -12,6 +14,9 @@ export interface PlaybookEntry {
   mood?: string;
   tags?: string[];
   images?: ImageData[];
+  videos?: VideoData[];
+  documents?: DocumentData[];
+  audioFiles?: { id: string; name: string; url: string; duration?: number }[];
 }
 
 export interface PlaybookSection {
@@ -130,7 +135,50 @@ const createSampleEntries = (): PlaybookEntry[] => [
       'Integrates work challenges into personal growth'
     ],
     mood: 'reflective',
-    tags: ['weekly-review', 'emotional-processing', 'work-growth', 'video-reflection']
+    tags: ['weekly-review', 'emotional-processing', 'work-growth', 'video-reflection'],
+    videos: [
+      {
+        id: 'video_reflection_1',
+        name: 'weekly-reflection-2024-01-28.webm',
+        url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+        size: 15728640, // 15MB
+        type: 'video/webm',
+        duration: 180 // 3 minutes
+      }
+    ],
+    documents: [
+      {
+        id: 'doc_reflection_notes',
+        name: 'reflection-notes-summary.pdf',
+        url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+        size: 524288, // 512KB
+        type: 'application/pdf'
+      }
+    ]
+  },
+  {
+    id: '6',
+    exerciseId: '7',
+    exerciseTitle: 'Audio Journal Entry',
+    category: 'reflection',
+    completedAt: new Date('2024-01-30T08:00:00Z'),
+    response: 'Today I tried something new - recording my thoughts instead of writing them down. There\'s something powerful about hearing your own voice work through complex emotions and situations. I found myself being more honest and direct than I usually am in written reflections.',
+    responseType: 'audio',
+    insights: [
+      'Audio format encourages authenticity',
+      'Verbal processing reveals new insights',
+      'Voice recordings capture emotional nuance'
+    ],
+    mood: 'reflective',
+    tags: ['audio-journaling', 'authenticity', 'emotional-awareness'],
+    audioFiles: [
+      {
+        id: 'audio_journal_1',
+        name: 'morning-reflection-jan-30.mp3',
+        url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+        duration: 420 // 7 minutes
+      }
+    ]
   }
 ];
 

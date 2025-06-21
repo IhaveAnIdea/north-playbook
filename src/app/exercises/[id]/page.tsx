@@ -1,330 +1,369 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import {
-  Box,
-  Typography,
-  Container,
-  Card,
-  CardContent,
-  Button,
-  TextField,
-  Stack,
-  Chip,
-  Alert,
-  CircularProgress,
-  IconButton,
-} from '@mui/material';
-import {
-  Mic,
-  MicOff,
-  Videocam,
-  VideocamOff,
-  Send,
-  ArrowBack,
-} from '@mui/icons-material';
-import { useAuthenticator } from '@aws-amplify/ui-react';
-import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Navbar from '@/components/layout/Navbar';
-import { exercises, categoryIcons, categoryColors } from '@/data/exercises';
-import ImageUpload, { ImageData } from '@/components/media/ImageUpload';
+import Link from 'next/link';
+import { generateClient } from 'aws-amplify/api';
+import { useAuthenticator } from '@aws-amplify/ui-react';
+import { useUserRole } from '@/hooks/useUserRole';
+import ImageThumbnail from '@/components/ui/ImageThumbnail';
+import type { Schema } from '../../../../amplify/data/resource';
 
-export default function ExercisePage() {
-  const { user } = useAuthenticator((context) => [context.user]);
+const client = generateClient<Schema>();
+
+interface Exercise {
+  id: string;
+  title: string;
+  description?: string;
+  category: string;
+  question: string;
+  instructions?: string;
+  requireText: boolean;
+  requireImage: boolean;
+  requireAudio: boolean;
+  requireVideo: boolean;
+  requireDocument: boolean;
+  textPrompt?: string;
+  maxTextLength?: number;
+  allowMultipleImages: boolean;
+  allowMultipleDocuments: boolean;
+  allowEditingCompleted: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+
+
+export default function ExerciseDetailPage() {
+  const { user, authStatus } = useAuthenticator((context) => [context.user, context.authStatus]);
+  const { isAdmin } = useUserRole();
   const params = useParams();
   const router = useRouter();
-  const [textResponse, setTextResponse] = useState('');
-  const [isRecording, setIsRecording] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [images, setImages] = useState<ImageData[]>([]);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
+  const exerciseId = params?.id as string;
+  
+  const [exercise, setExercise] = useState<Exercise | null>(null);
+  const [recentImages, setRecentImages] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const exerciseId = params.id as string;
-  const exercise = exercises.find(ex => ex.id === exerciseId);
+  useEffect(() => {
+    if (authStatus === 'authenticated' && user && exerciseId) {
+      loadExercise();
+      loadRecentImages();
+    }
+  }, [authStatus, user, exerciseId]);
 
-  if (!exercise) {
-    return (
-      <>
-        <Navbar />
-        <Container maxWidth="lg" sx={{ py: 4 }}>
-          <Alert severity="error">Exercise not found</Alert>
-          <Button component={Link} href="/exercises" sx={{ mt: 2 }}>
-            Back to Exercises
-          </Button>
-        </Container>
-      </>
-    );
-  }
-
-  const handleStartRecording = async () => {
+  const loadExercise = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: true, 
-        video: exercise.promptType === 'video' 
-      });
-      
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      
-      const chunks: BlobPart[] = [];
-      mediaRecorder.ondataavailable = (event) => {
-        chunks.push(event.data);
-      };
-      
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { 
-          type: exercise.promptType === 'video' ? 'video/webm' : 'audio/webm' 
+      const { data } = await client.models.Exercise.get({ id: exerciseId });
+      if (data) {
+        setExercise({
+          id: data.id,
+          title: data.title || '',
+          description: data.description || undefined,
+          category: (data.category as string) || '',
+          question: data.question || '',
+          instructions: data.instructions || undefined,
+          requireText: data.requireText ?? false,
+          requireImage: data.requireImage ?? false,
+          requireAudio: data.requireAudio ?? false,
+          requireVideo: data.requireVideo ?? false,
+          requireDocument: data.requireDocument ?? false,
+          textPrompt: data.textPrompt || undefined,
+          maxTextLength: data.maxTextLength || undefined,
+          allowMultipleImages: data.allowMultipleImages ?? false,
+          allowMultipleDocuments: data.allowMultipleDocuments ?? false,
+          allowEditingCompleted: data.allowEditingCompleted ?? false,
+          isActive: data.isActive ?? true,
+          createdAt: data.createdAt || new Date().toISOString(),
+          updatedAt: data.updatedAt || new Date().toISOString(),
         });
-        setRecordedBlob(blob);
-        stream.getTracks().forEach(track => track.stop());
-      };
-      
-      mediaRecorder.start();
-      setIsRecording(true);
+      } else {
+        setError('Exercise not found');
+      }
     } catch (error) {
-      console.error('Error starting recording:', error);
-      alert('Could not access microphone/camera. Please check permissions.');
-    }
-  };
-
-  const handleStopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
-  };
-
-  const handleImageUpload = (imageData: ImageData) => {
-    setImages(prev => [...prev, imageData]);
-  };
-
-  const handleImageRemove = (imageId: string) => {
-    setImages(prev => prev.filter(img => img.id !== imageId));
-  };
-
-  const handleSubmit = async () => {
-    if (!user) {
-      alert('Please sign in to submit your response');
-      return;
-    }
-
-    setIsSubmitting(true);
-    
-    try {
-      // Here you would typically save to your backend/database
-      // For now, we'll just simulate a submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setSubmitted(true);
-      
-      // You could also redirect to a success page or back to exercises
-      setTimeout(() => {
-        router.push('/exercises');
-      }, 3000);
-      
-    } catch (error) {
-      console.error('Error submitting response:', error);
-      alert('Error submitting response. Please try again.');
+      console.error('Error loading exercise:', error);
+      setError('Failed to load exercise');
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  const canSubmit = () => {
-    if (exercise.promptType === 'text') {
-      return textResponse.trim().length > 0;
+  const loadRecentImages = async () => {
+    try {
+      // Load user's recent responses with images for this exercise
+      const { data: responses } = await client.models.ExerciseResponse.list({
+        filter: {
+          exerciseId: { eq: exerciseId },
+          userId: { eq: user?.userId }
+        }
+      });
+
+      if (responses) {
+        const imagesFromResponses: string[] = [];
+        const responsesWithImages = responses
+          .filter(response => response.imageS3Keys && response.imageS3Keys.length > 0)
+          .sort((a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime());
+        
+        for (const response of responsesWithImages) {
+          if (response.imageS3Keys) {
+            imagesFromResponses.push(...response.imageS3Keys);
+            if (imagesFromResponses.length >= 6) break; // Show up to 6 recent images
+          }
+        }
+        
+        setRecentImages(imagesFromResponses.slice(0, 6));
+      }
+    } catch (error) {
+      console.error('Error loading recent images:', error);
     }
-    return recordedBlob !== null;
   };
 
-  if (submitted) {
+  const getCategoryColor = (category: string) => {
+    const colors: Record<string, string> = {
+      mindset: 'bg-purple-100 text-purple-800',
+      motivation: 'bg-blue-100 text-blue-800',
+      goals: 'bg-green-100 text-green-800',
+      reflection: 'bg-yellow-100 text-yellow-800',
+      gratitude: 'bg-pink-100 text-pink-800',
+      vision: 'bg-indigo-100 text-indigo-800',
+    };
+    return colors[category] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getRequiredResponseTypes = (exercise: Exercise) => {
+    const types: string[] = [];
+    if (exercise.requireText) types.push('📝 Text');
+    if (exercise.requireImage) types.push('🖼️ Image');
+    if (exercise.requireAudio) types.push('🎵 Audio');
+    if (exercise.requireVideo) types.push('🎥 Video');
+    if (exercise.requireDocument) types.push('📄 Document');
+    return types;
+  };
+
+
+
+  if (authStatus === 'configuring' || isLoading) {
     return (
-      <>
-        <Navbar />
-        <Container maxWidth="md" sx={{ py: 4 }}>
-          <Card>
-            <CardContent sx={{ p: 4, textAlign: 'center' }}>
-              <Typography variant="h4" color="primary" gutterBottom>
-                Response Submitted!
-              </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                Thank you for completing the &ldquo;{exercise.title}&rdquo; exercise. 
-                Your response has been saved and will be analyzed for insights.
-              </Typography>
-              <Button variant="contained" component={Link} href="/exercises">
-                Continue to Exercises
-              </Button>
-            </CardContent>
-          </Card>
-        </Container>
-      </>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
     );
   }
+
+  if (error || !exercise) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">❌</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Exercise Not Found</h2>
+          <p className="text-gray-600 mb-6">{error || 'The exercise you are looking for does not exist.'}</p>
+          <Link
+            href="/exercises"
+            className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Back to Exercises
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const requiredTypes = getRequiredResponseTypes(exercise);
 
   return (
-    <>
-      <Navbar />
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        {/* Back Button */}
-        <Button
-          startIcon={<ArrowBack />}
-          component={Link}
-          href="/exercises"
-          sx={{ mb: 3 }}
-        >
-          Back to Exercises
-        </Button>
-
-        {/* Exercise Header */}
-        <Card sx={{ mb: 4 }}>
-          <CardContent sx={{ p: 4 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-              <Box
-                sx={{
-                  p: 1.5,
-                  borderRadius: 2,
-                  bgcolor: `${categoryColors[exercise.category as keyof typeof categoryColors]}.main`,
-                  color: 'white',
-                  mr: 3,
-                                 }}
-               >
-                 {React.createElement(categoryIcons[exercise.category as keyof typeof categoryIcons])}
-               </Box>
-              <Box sx={{ flexGrow: 1 }}>
-                <Typography variant="h4" component="h1" gutterBottom>
-                  {exercise.title}
-                </Typography>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Chip
-                    label={exercise.category}
-                    size="small"
-                    color={categoryColors[exercise.category as keyof typeof categoryColors]}
-                  />
-                  <Chip
-                    label={exercise.promptType}
-                    size="small"
-                    variant="outlined"
-                  />
-                  <Chip
-                    label={exercise.estimatedTime}
-                    size="small"
-                    variant="outlined"
-                  />
-                </Stack>
-              </Box>
-            </Box>
-
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-              {exercise.description}
-            </Typography>
-
-            <Box sx={{ p: 3, bgcolor: 'primary.light', borderRadius: 2, color: 'primary.contrastText' }}>
-              <Typography variant="h6" gutterBottom>
-                Exercise Question:
-              </Typography>
-              <Typography variant="body1">
-                {exercise.question}
-              </Typography>
-            </Box>
-          </CardContent>
-        </Card>
-
-        {/* Response Section */}
-        <Card>
-          <CardContent sx={{ p: 4 }}>
-            <Typography variant="h5" gutterBottom>
-              Your Response
-            </Typography>
-
-            {exercise.promptType === 'text' && (
-              <TextField
-                fullWidth
-                multiline
-                rows={8}
-                placeholder="Share your thoughts here..."
-                value={textResponse}
-                onChange={(e) => setTextResponse(e.target.value)}
-                sx={{ mb: 3 }}
-              />
-            )}
-
-            {(exercise.promptType === 'audio' || exercise.promptType === 'video') && (
-              <Box sx={{ mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                  <IconButton
-                    color={isRecording ? 'error' : 'primary'}
-                    onClick={isRecording ? handleStopRecording : handleStartRecording}
-                    size="large"
-                    sx={{ 
-                      bgcolor: isRecording ? 'error.light' : 'primary.light',
-                      '&:hover': {
-                        bgcolor: isRecording ? 'error.main' : 'primary.main',
-                      }
-                    }}
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => router.back()}
+                className="text-gray-600 hover:text-gray-800"
+              >
+                ← Back
+              </button>
+              <div className="flex items-center space-x-3">
+                <span className="text-3xl">📋</span>
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">{exercise.title}</h1>
+                  <div className="flex items-center space-x-3 mt-2">
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(exercise.category)}`}>
+                      {exercise.category}
+                    </span>
+                    <span className={`px-3 py-1 rounded-full text-sm ${exercise.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                      {exercise.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex space-x-3">
+              {isAdmin ? (
+                <>
+                  <Link
+                    href={`/exercises/${exercise.id}/edit`}
+                    className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
-                    {exercise.promptType === 'video' ? (
-                      isRecording ? <VideocamOff /> : <Videocam />
-                    ) : (
-                      isRecording ? <MicOff /> : <Mic />
-                    )}
-                  </IconButton>
-                  <Typography variant="body1">
-                    {isRecording 
-                      ? `Recording ${exercise.promptType}... Click to stop`
-                      : `Click to start recording your ${exercise.promptType} response`
-                    }
-                  </Typography>
-                </Box>
-                
-                {recordedBlob && (
-                  <Alert severity="success" sx={{ mb: 2 }}>
-                    {exercise.promptType === 'video' ? 'Video' : 'Audio'} recorded successfully! 
-                    You can record again to replace it.
-                  </Alert>
-                )}
-              </Box>
+                    Edit Template
+                  </Link>
+                  <Link
+                    href={`/exercises/${exercise.id}/responses`}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    My Responses
+                  </Link>
+                  <Link
+                    href={`/exercises/${exercise.id}/complete`}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    Complete Exercise
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href={`/exercises/${exercise.id}/responses`}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    My Responses
+                  </Link>
+                  <Link
+                    href={`/exercises/${exercise.id}/complete`}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    Complete Exercise
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Exercise Content */}
+        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+          <div className="space-y-6">
+            {/* Question */}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">Exercise Question</h2>
+              <p className="text-lg text-gray-700 bg-gray-50 p-4 rounded-md">
+                {exercise.question}
+              </p>
+            </div>
+
+            {/* Instructions */}
+            {exercise.instructions && (
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-3">Instructions</h2>
+                <div className="bg-blue-50 p-4 rounded-md">
+                  <p className="text-blue-800 whitespace-pre-wrap">
+                    {exercise.instructions}
+                  </p>
+                </div>
+              </div>
             )}
 
-            {/* Image Upload Section */}
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Add Images (Optional)
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Upload images that relate to your response - inspiration photos, diagrams, or visual references.
-              </Typography>
-              <ImageUpload
-                onImageUpload={handleImageUpload}
-                onImageRemove={handleImageRemove}
-                existingImages={images}
-                maxImages={3}
-                maxSizeMB={5}
-              />
-            </Box>
+            {/* Description */}
+            {exercise.description && (
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-3">Description & Narrative</h2>
+                <div className="prose max-w-none">
+                  <p className="text-gray-700 whitespace-pre-wrap">
+                    {exercise.description}
+                  </p>
+                </div>
+              </div>
+            )}
 
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-              <Button
-                variant="outlined"
-                component={Link}
-                href="/exercises"
-              >
-                Save for Later
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={isSubmitting ? <CircularProgress size={20} /> : <Send />}
-                onClick={handleSubmit}
-                disabled={!canSubmit() || isSubmitting}
-              >
-                {isSubmitting ? 'Submitting...' : 'Submit Response'}
-              </Button>
-            </Box>
-          </CardContent>
-        </Card>
-      </Container>
-    </>
+            {/* Required Response Types */}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">Required Response Types</h2>
+              <div className="bg-yellow-50 p-4 rounded-md">
+                <p className="text-yellow-800 text-sm mb-3">
+                  To complete this exercise, you must provide the following types of responses:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {requiredTypes.map((type, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-yellow-200 text-yellow-800 rounded-full text-sm font-medium"
+                    >
+                      {type}
+                    </span>
+                  ))}
+                </div>
+                {exercise.requireText && exercise.textPrompt && (
+                  <div className="mt-3 p-3 bg-white rounded border border-yellow-200">
+                    <p className="text-sm text-gray-700">
+                      <strong>Text Prompt:</strong> {exercise.textPrompt}
+                    </p>
+                    {exercise.maxTextLength && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Maximum {exercise.maxTextLength} characters
+                      </p>
+                    )}
+                  </div>
+                )}
+                {exercise.requireImage && exercise.allowMultipleImages && (
+                  <div className="mt-3 p-3 bg-white rounded border border-yellow-200">
+                    <p className="text-sm text-gray-700">
+                      <strong>Image Upload:</strong> Multiple images allowed
+                    </p>
+                  </div>
+                )}
+                {exercise.requireDocument && exercise.allowMultipleDocuments && (
+                  <div className="mt-3 p-3 bg-white rounded border border-yellow-200">
+                    <p className="text-sm text-gray-700">
+                      <strong>Document Upload:</strong> Multiple documents allowed
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Exercise Details */}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">Exercise Details</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-md">
+                  <h3 className="font-medium text-gray-900">Created</h3>
+                  <p className="text-gray-600">{new Date(exercise.createdAt).toLocaleDateString()}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-md">
+                  <h3 className="font-medium text-gray-900">Last Updated</h3>
+                  <p className="text-gray-600">{new Date(exercise.updatedAt).toLocaleDateString()}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Response Images */}
+            {recentImages.length > 0 && (
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-3">Your Recent Images</h2>
+                <div className="bg-blue-50 p-4 rounded-md">
+                  <p className="text-blue-800 text-sm mb-3">
+                    Images from your recent responses to this exercise:
+                  </p>
+                  <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                    {recentImages.map((s3Key, index) => (
+                      <ImageThumbnail 
+                        key={index} 
+                        s3Key={s3Key} 
+                        alt={`Recent response image ${index + 1}`}
+                        size="md"
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+
+      </div>
+    </div>
   );
 } 

@@ -1,0 +1,165 @@
+type UserProfile @model @auth(rules: [{allow: owner, ownerField: "owner"}])
+{
+  userId: ID!
+  firstName: String!
+  lastName: String!
+  email: AWSEmail!
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Exercise @model @auth(rules: [{allow: private, operations: [read]}])
+{
+  title: String!
+  description: String!
+  category: ExerciseCategory
+  question: String!
+  promptType: ExercisePromptType
+  isActive: Boolean @default(value: "true")
+  order: Int
+  createdAt: AWSDateTime
+  responses: [ExerciseResponse] @hasMany(references: ["exerciseId"])
+  mediaAssets: [MediaAsset] @hasMany(references: ["exerciseId"])
+  userProgress: [UserProgress] @hasMany(references: ["exerciseId"])
+}
+
+type ExerciseResponse @model @auth(rules: [{allow: owner, ownerField: "owner"}])
+{
+  exerciseId: ID!
+  userId: ID!
+  responseText: String
+  audioS3Key: String
+  videoS3Key: String
+  imageS3Keys: [String]
+  s3Bucket: String
+  analysisResult: AWSJSON
+  insights: String
+  mood: String
+  tags: [String]
+  completionTime: Int
+  confidence: Int
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  exercise: Exercise @belongsTo(references: ["exerciseId"])
+  playbookEntries: [PlaybookEntry] @hasMany(references: ["exerciseResponseId"])
+  mediaAssets: [MediaAsset] @hasMany(references: ["exerciseResponseId"])
+}
+
+type PlaybookEntry @model @auth(rules: [{allow: owner, ownerField: "owner"}])
+{
+  userId: ID!
+  exerciseResponseId: ID
+  title: String!
+  content: String!
+  category: String!
+  insights: String
+  audioS3Keys: [String]
+  videoS3Keys: [String]
+  imageS3Keys: [String]
+  documentS3Keys: [String]
+  s3Bucket: String
+  mood: String
+  tags: [String]
+  isHighlight: Boolean @default(value: "false")
+  viewCount: Int @default(value: "0")
+  lastViewedAt: AWSDateTime
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  exerciseResponse: ExerciseResponse @belongsTo(references: ["exerciseResponseId"])
+  mediaAssets: [MediaAsset] @hasMany(references: ["playbookEntryId"])
+}
+
+type UserInsights @model @auth(rules: [{allow: owner, ownerField: "owner"}])
+{
+  userId: ID!
+  overallMood: String
+  growthAreas: [String]
+  strengths: [String]
+  recommendations: [String]
+  progressMetrics: AWSJSON
+  lastUpdated: AWSDateTime
+  totalExercisesCompleted: Int @default(value: "0")
+  streakDays: Int @default(value: "0")
+  lastExerciseDate: AWSDateTime
+}
+
+type MediaAsset @model @auth(rules: [{allow: owner, ownerField: "owner"}])
+{
+  userId: ID!
+  s3Key: String!
+  s3Bucket: String!
+  fileName: String!
+  fileType: String!
+  fileSize: Int!
+  mimeType: String!
+  exerciseId: ID
+  exerciseResponseId: ID
+  playbookEntryId: ID
+  category: String
+  tags: [String]
+  description: String
+  uploadedAt: AWSDateTime!
+  lastAccessedAt: AWSDateTime
+  accessCount: Int @default(value: "0")
+  exercise: Exercise @belongsTo(references: ["exerciseId"])
+  exerciseResponse: ExerciseResponse @belongsTo(references: ["exerciseResponseId"])
+  playbookEntry: PlaybookEntry @belongsTo(references: ["playbookEntryId"])
+}
+
+type UserSession @model @auth(rules: [{allow: owner, ownerField: "owner"}])
+{
+  userId: ID!
+  sessionType: UserSessionSessionType
+  startTime: AWSDateTime!
+  endTime: AWSDateTime
+  duration: Int
+  exerciseIds: [String]
+  mood: String
+  notes: String
+  completionStatus: UserSessionCompletionStatus
+  metadata: AWSJSON
+}
+
+type UserProgress @model @auth(rules: [{allow: owner, ownerField: "owner"}])
+{
+  userId: ID!
+  exerciseId: ID!
+  completionCount: Int @default(value: "0")
+  lastCompletedAt: AWSDateTime
+  averageCompletionTime: Int
+  averageMoodRating: Float
+  bestStreak: Int @default(value: "0")
+  currentStreak: Int @default(value: "0")
+  totalTimeSpent: Int @default(value: "0")
+  insights: [String]
+  exercise: Exercise @belongsTo(references: ["exerciseId"])
+}
+
+enum ExerciseCategory {
+  mindset
+  motivation
+  goals
+  reflection
+  gratitude
+  vision
+}
+
+enum ExercisePromptType {
+  text
+  audio
+  video
+}
+
+enum UserSessionSessionType {
+  exercise
+  reflection
+  goal_setting
+  review
+}
+
+enum UserSessionCompletionStatus {
+  started
+  completed
+  paused
+  abandoned
+}

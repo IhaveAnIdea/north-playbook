@@ -41,8 +41,15 @@
     "awsAppsyncAuthenticationType",
     "awsAppsyncRegion",
     "amplifyApiModelSchemaS3Uri",
-    "awsAppsyncApiKey",
     "awsAppsyncAdditionalAuthenticationTypes"
+   ]
+  },
+  "AWS::Amplify::Storage": {
+   "version": "1",
+   "stackOutputs": [
+    "buckets",
+    "storageRegion",
+    "bucketName"
    ]
   }
  },
@@ -198,19 +205,101 @@
     ]
    }
   },
-  "awsAppsyncApiKey": {
+  "awsAppsyncAdditionalAuthenticationTypes": {
+   "Value": "AWS_IAM"
+  },
+  "storageRegion": {
+   "Value": {
+    "Ref": "AWS::Region"
+   }
+  },
+  "bucketName": {
    "Value": {
     "Fn::GetAtt": [
-     "data7552DF31",
-     "Outputs.amplifynorthplaybookactwrsandboxb72e1d22f0dataamplifyDataGraphQLAPIDefaultApiKey8888D487ApiKey"
+     "storage0EC3F24A",
+     "Outputs.amplifynorthplaybookactwrsandboxb72e1d22f0storagenorthplaybookstorageBucket33D44BEBRef"
     ]
    }
   },
-  "awsAppsyncAdditionalAuthenticationTypes": {
-   "Value": "API_KEY,AWS_IAM"
+  "buckets": {
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "[\"{\\\"name\\\":\\\"north-playbook-storage\\\",\\\"bucketName\\\":\\\"",
+      {
+       "Fn::GetAtt": [
+        "storage0EC3F24A",
+        "Outputs.amplifynorthplaybookactwrsandboxb72e1d22f0storagenorthplaybookstorageBucket33D44BEBRef"
+       ]
+      },
+      "\\\",\\\"storageRegion\\\":\\\"",
+      {
+       "Ref": "AWS::Region"
+      },
+      "\\\",\\\"paths\\\":{\\\"public/*\\\":{\\\"guest\\\":[\\\"get\\\",\\\"list\\\"],\\\"authenticated\\\":[\\\"get\\\",\\\"list\\\",\\\"write\\\"]},\\\"users/playbook/${cognito-identity.amazonaws.com:sub}/*\\\":{\\\"entityidentity\\\":[\\\"get\\\",\\\"list\\\",\\\"write\\\",\\\"delete\\\"]},\\\"users/profile/${cognito-identity.amazonaws.com:sub}/*\\\":{\\\"entityidentity\\\":[\\\"get\\\",\\\"list\\\",\\\"write\\\",\\\"delete\\\"]},\\\"exercise-responses/images/${cognito-identity.amazonaws.com:sub}/*\\\":{\\\"entityidentity\\\":[\\\"get\\\",\\\"list\\\",\\\"write\\\",\\\"delete\\\"]},\\\"exercise-responses/audio/${cognito-identity.amazonaws.com:sub}/*\\\":{\\\"entityidentity\\\":[\\\"get\\\",\\\"list\\\",\\\"write\\\",\\\"delete\\\"]},\\\"exercise-responses/video/${cognito-identity.amazonaws.com:sub}/*\\\":{\\\"entityidentity\\\":[\\\"get\\\",\\\"list\\\",\\\"write\\\",\\\"delete\\\"]},\\\"exercise-responses/documents/${cognito-identity.amazonaws.com:sub}/*\\\":{\\\"entityidentity\\\":[\\\"get\\\",\\\"list\\\",\\\"write\\\",\\\"delete\\\"]},\\\"temp/${cognito-identity.amazonaws.com:sub}/*\\\":{\\\"entityidentity\\\":[\\\"get\\\",\\\"list\\\",\\\"write\\\",\\\"delete\\\"]}}}\"]"
+     ]
+    ]
+   }
   }
  },
  "Resources": {
+  "storage0EC3F24A": {
+   "Type": "AWS::CloudFormation::Stack",
+   "Properties": {
+    "Parameters": {
+     "referencetoamplifynorthplaybookactwrsandboxb72e1d22f0authNestedStackauthNestedStackResourceD1FB529COutputsamplifynorthplaybookactwrsandboxb72e1d22f0authamplifyAuthunauthenticatedUserRole10C0CDABRef": {
+      "Fn::GetAtt": [
+       "auth179371D7",
+       "Outputs.amplifynorthplaybookactwrsandboxb72e1d22f0authamplifyAuthunauthenticatedUserRole10C0CDABRef"
+      ]
+     },
+     "referencetoamplifynorthplaybookactwrsandboxb72e1d22f0authNestedStackauthNestedStackResourceD1FB529COutputsamplifynorthplaybookactwrsandboxb72e1d22f0authamplifyAuthauthenticatedUserRole049BEB88Ref": {
+      "Fn::GetAtt": [
+       "auth179371D7",
+       "Outputs.amplifynorthplaybookactwrsandboxb72e1d22f0authamplifyAuthauthenticatedUserRole049BEB88Ref"
+      ]
+     }
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "TemplateURL": {
+     "Fn::Join": [
+      "",
+      [
+       "https://s3.",
+       {
+        "Ref": "AWS::Region"
+       },
+       ".",
+       {
+        "Ref": "AWS::URLSuffix"
+       },
+       "/",
+       {
+        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+       },
+       "/5e97b78e5de006be11de0aea5807cd714ea2d112395a1ccfa0b830f27bbc519e.json"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-northplaybook-actwr-sandbox-b72e1d22f0/storage.NestedStack/storage.NestedStackResource",
+    "aws:asset:path": "amplifynorthplaybookactwrsandboxb72e1d22f0storageC305BEA2.nested.template.json",
+    "aws:asset:property": "TemplateURL"
+   }
+  },
   "auth179371D7": {
    "Type": "AWS::CloudFormation::Stack",
    "Properties": {
@@ -240,7 +329,7 @@
        {
         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
        },
-       "/937f495c276b049bed7735cc5a0062c55d282d660211ddcd62c76bd1d342b766.json"
+       "/0c9dcfb0f3f18c84281dd38c522027cec3065d31854a2337c1d1b722d585fb1e.json"
       ]
      ]
     }
@@ -308,7 +397,7 @@
        {
         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
        },
-       "/c31c658b73539b6086a29dc2e08274471a03845619ab4a12c8696a92a94035cd.json"
+       "/a7995a057118c196f1f1c3547abfa1d0167aeb7091a8362b95f867a8d4bbd428.json"
       ]
      ]
     }
@@ -318,48 +407,6 @@
    "Metadata": {
     "aws:cdk:path": "amplify-northplaybook-actwr-sandbox-b72e1d22f0/data.NestedStack/data.NestedStackResource",
     "aws:asset:path": "amplifynorthplaybookactwrsandboxb72e1d22f0data84556C4C.nested.template.json",
-    "aws:asset:property": "TemplateURL"
-   }
-  },
-  "storage0EC3F24A": {
-   "Type": "AWS::CloudFormation::Stack",
-   "Properties": {
-    "Tags": [
-     {
-      "Key": "amplify:deployment-type",
-      "Value": "sandbox"
-     },
-     {
-      "Key": "created-by",
-      "Value": "amplify"
-     }
-    ],
-    "TemplateURL": {
-     "Fn::Join": [
-      "",
-      [
-       "https://s3.",
-       {
-        "Ref": "AWS::Region"
-       },
-       ".",
-       {
-        "Ref": "AWS::URLSuffix"
-       },
-       "/",
-       {
-        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
-       },
-       "/1e90c6dfe2689596de13eb549c2fc35e2943a4e821d902159c10b623a051ce5c.json"
-      ]
-     ]
-    }
-   },
-   "UpdateReplacePolicy": "Delete",
-   "DeletionPolicy": "Delete",
-   "Metadata": {
-    "aws:cdk:path": "amplify-northplaybook-actwr-sandbox-b72e1d22f0/storage.NestedStack/storage.NestedStackResource",
-    "aws:asset:path": "amplifynorthplaybookactwrsandboxb72e1d22f0storageC305BEA2.nested.template.json",
     "aws:asset:property": "TemplateURL"
    }
   },

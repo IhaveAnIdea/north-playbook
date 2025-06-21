@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { AmplifyProvider } from '@/components/providers/AmplifyProvider';
+import Navigation from '@/components/layout/Navigation';
+
 
 const inter = Inter({
   subsets: ["latin"],
@@ -33,9 +34,8 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <AmplifyProvider>
-          <ThemeProvider>
-            {children}
-          </ThemeProvider>
+          <Navigation />
+          {children}
         </AmplifyProvider>
       </body>
     </html>

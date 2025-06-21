@@ -157,6 +157,49 @@ import ImageUpload from '@/components/media/ImageUpload';
 />
 ```
 
+### 6. Using Asset Library for Browsing
+
+```typescript
+import AssetLibrary from '@/components/media/AssetLibrary';
+
+<AssetLibrary 
+  showActions={true}
+  compactMode={false}
+  onAssetSelect={(asset) => console.log('Selected:', asset)}
+/>
+```
+
+### 7. Semantic Search with Advanced Options
+
+```typescript
+const searchResults = await storageService.semanticSearch('affirmations', {
+  categories: ['mindset', 'motivation'],
+  fileTypes: ['image', 'video'],
+  dateRange: {
+    start: new Date('2024-01-01'),
+    end: new Date('2024-12-31')
+  },
+  mood: 'positive',
+  tags: ['morning-routine'],
+  sortBy: 'relevance',
+  limit: 20
+});
+```
+
+### 8. Using in Playbook Context
+
+```typescript
+import PlaybookAssetGallery from '@/components/playbook/PlaybookAssetGallery';
+
+<PlaybookAssetGallery 
+  category="mindset"
+  exerciseId="mindset-001"
+  title="Exercise Assets"
+  showSearch={true}
+  compactMode={true}
+/>
+```
+
 ## Storage Service API
 
 ### Core Methods
@@ -188,6 +231,25 @@ Gets all assets for a specific category.
 #### `deleteAsset(key: string)`
 Deletes an asset from storage.
 
+#### `semanticSearch(searchTerm: string, options?: SemanticSearchOptions)`
+Advanced semantic search with filtering and scoring.
+
+**Parameters:**
+- `searchTerm`: Text to search for across asset metadata
+- `options`: Advanced filtering options (category, file type, date range, etc.)
+
+**Returns:** `AssetSearchResult[]` with relevance scores and matched fields
+
+#### `getAssetStats()`
+Get comprehensive statistics about user's assets.
+
+**Returns:** Asset counts by type and category, plus recent assets
+
+#### `bulkDeleteAssets(keys: string[])`
+Delete multiple assets in bulk operation.
+
+**Returns:** Object with succeeded and failed deletion keys
+
 ### Types
 
 ```typescript
@@ -213,6 +275,28 @@ interface StorageMetadata {
   fileType: string;
   originalName: string;
   description?: string;
+}
+
+interface AssetSearchResult {
+  key: string;
+  url: string;
+  metadata: StorageMetadata;
+  score: number; // Relevance score
+  matchedFields: string[]; // Which fields matched the search
+}
+
+interface SemanticSearchOptions {
+  categories?: string[];
+  exerciseIds?: string[];
+  fileTypes?: string[];
+  tags?: string[];
+  dateRange?: {
+    start: Date;
+    end: Date;
+  };
+  mood?: string;
+  sortBy?: 'relevance' | 'date' | 'category' | 'type';
+  limit?: number;
 }
 ```
 

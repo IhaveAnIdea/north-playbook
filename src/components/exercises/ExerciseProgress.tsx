@@ -1,124 +1,159 @@
 'use client';
 
 import React from 'react';
-import {
-  Box,
-  Typography,
-  LinearProgress,
-  Card,
-  CardContent,
-  Stack,
-  Chip,
-} from '@mui/material';
-import { CheckCircle, Schedule, TrendingUp } from '@mui/icons-material';
-import { exercises } from '@/data/exercises';
+import { 
+  calculateExerciseProgress, 
+  getProgressColor, 
+  getProgressColorValue,
+  getStateInfo,
+  ExerciseRequirements, 
+  ExerciseResponse,
+  ProgressCalculation 
+} from '@/utils/exerciseProgress';
 
 interface ExerciseProgressProps {
-  completedExerciseIds?: string[];
+  requirements: ExerciseRequirements;
+  response?: ExerciseResponse;
+  showDetails?: boolean;
+  compact?: boolean;
 }
 
-export default function ExerciseProgress({ completedExerciseIds = [] }: ExerciseProgressProps) {
-  const totalExercises = exercises.length;
-  const completedCount = completedExerciseIds.length;
-  const progressPercentage = totalExercises > 0 ? (completedCount / totalExercises) * 100 : 0;
+export default function ExerciseProgress({
+  requirements,
+  response,
+  showDetails = true,
+  compact = false,
+}: ExerciseProgressProps) {
+  const progress = calculateExerciseProgress(requirements, response);
+  const stateInfo = getStateInfo(progress.state);
+  const progressColor = getProgressColor(progress.percentageComplete);
+  
+  // Debug logging
+  const bgColor = getProgressColorValue(progress.percentageComplete);
+  console.log('Progress Debug:', {
+    percentage: progress.percentageComplete,
+    progressColor,
+    backgroundColor: bgColor,
+    totalReq: progress.totalRequirements,
+    completedReq: progress.completedRequirements
+  });
 
-  // Calculate category progress
-  const categoryProgress = exercises.reduce((acc, exercise) => {
-    if (!acc[exercise.category]) {
-      acc[exercise.category] = { total: 0, completed: 0 };
-    }
-    acc[exercise.category].total++;
-    if (completedExerciseIds.includes(exercise.id)) {
-      acc[exercise.category].completed++;
-    }
-    return acc;
-  }, {} as Record<string, { total: number; completed: number }>);
+
+  if (compact) {
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-gray-600">Progress</span>
+          <span className={`text-xs font-medium ${stateInfo.color}`}>
+            {progress.completedRequirements}/{progress.totalRequirements}
+          </span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-3 border">
+          <div
+            className="h-3 rounded-full transition-all duration-300"
+            style={{ 
+              width: `${progress.percentageComplete}%`,
+              backgroundColor: bgColor,
+              minWidth: progress.percentageComplete > 0 ? '4px' : '0px',
+              opacity: 1,
+              zIndex: 1
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <Card>
-      <CardContent sx={{ p: 3 }}>
-        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <TrendingUp color="primary" />
-          Your Progress
-        </Typography>
-
-        {/* Overall Progress */}
-        <Box sx={{ mb: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-            <Typography variant="body2" color="text.secondary">
-              Overall Progress
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {completedCount} of {totalExercises} exercises
-            </Typography>
-          </Box>
-          <LinearProgress
-            variant="determinate"
-            value={progressPercentage}
-            sx={{ height: 8, borderRadius: 4 }}
+    <div className="space-y-3">
+      {/* Progress Bar */}
+      <div>
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-sm font-medium text-gray-700">Progress</span>
+          <span className={`text-sm font-medium ${stateInfo.color} flex items-center space-x-1`}>
+            <span>{stateInfo.icon}</span>
+            <span>{stateInfo.text} ({progress.completedRequirements}/{progress.totalRequirements})</span>
+          </span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div
+            className="h-2 rounded-full transition-all duration-300"
+            style={{ 
+              width: `${progress.percentageComplete}%`,
+              backgroundColor: bgColor,
+              opacity: 1,
+              zIndex: 1
+            }}
           />
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
-            {Math.round(progressPercentage)}% Complete
-          </Typography>
-        </Box>
+        </div>
+        <div className="text-xs text-gray-500 mt-1">
+          {progress.completedRequirements} of {progress.totalRequirements} requirements completed
+        </div>
+      </div>
 
-        {/* Category Progress */}
-        <Typography variant="subtitle2" gutterBottom>
-          Progress by Category
-        </Typography>
-        <Stack spacing={2}>
-          {Object.entries(categoryProgress).map(([category, progress]) => {
-            const categoryPercentage = (progress.completed / progress.total) * 100;
-            return (
-              <Box key={category}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                  <Chip
-                    label={category.charAt(0).toUpperCase() + category.slice(1)}
-                    size="small"
-                    variant="outlined"
-                  />
-                  <Typography variant="body2" color="text.secondary">
-                    {progress.completed}/{progress.total}
-                  </Typography>
-                </Box>
-                <LinearProgress
-                  variant="determinate"
-                  value={categoryPercentage}
-                  sx={{ height: 4, borderRadius: 2 }}
-                />
-              </Box>
-            );
-          })}
-        </Stack>
+      {/* Requirements Details */}
+      {showDetails && (
+        <div className="space-y-2">
+          {/* Completed Requirements */}
+          {progress.completedRequirements_list.length > 0 && (
+            <div>
+              <h4 className="text-xs font-medium text-green-700 mb-1">✓ Completed:</h4>
+              <div className="flex flex-wrap gap-1">
+                {progress.completedRequirements_list.map((req, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800"
+                  >
+                    ✓ {req}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
-        {/* Quick Stats */}
-        <Box sx={{ mt: 3, pt: 2, borderTop: 1, borderColor: 'divider' }}>
-          <Stack direction="row" spacing={2} justifyContent="center">
-            <Box sx={{ textAlign: 'center' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-                <CheckCircle color="success" fontSize="small" />
-                <Typography variant="h6" color="success.main">
-                  {completedCount}
-                </Typography>
-              </Box>
-              <Typography variant="body2" color="text.secondary">
-                Completed
-              </Typography>
-            </Box>
-            <Box sx={{ textAlign: 'center' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-                <Schedule color="warning" fontSize="small" />
-                <Typography variant="h6" color="warning.main">
-                  {totalExercises - completedCount}
-                </Typography>
-              </Box>
-              <Typography variant="body2" color="text.secondary">
-                Remaining
-              </Typography>
-            </Box>
-          </Stack>
-        </Box>
-      </CardContent>
-    </Card>
+          {/* Missing Requirements */}
+          {progress.missingRequirements.length > 0 && (
+            <div>
+              <h4 className="text-xs font-medium text-orange-700 mb-1">Still needed:</h4>
+              <div className="flex flex-wrap gap-1">
+                {progress.missingRequirements.map((req, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-800"
+                  >
+                    ⏳ {req}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* State-based Action Message */}
+      {progress.state === 'completed' && (
+        <div className="text-xs text-green-600 italic flex items-center space-x-1">
+          <span>✓</span>
+          <span>Exercise completed. View only.</span>
+        </div>
+      )}
+      
+      {progress.state === 'incomplete' && (
+        <div className="text-xs text-blue-600 italic flex items-center space-x-1">
+          <span>🚀</span>
+          <span>In progress - continue when ready.</span>
+        </div>
+      )}
+
+      {progress.state === 'unstarted' && (
+        <div className="text-xs text-gray-600 italic flex items-center space-x-1">
+          <span>🔓</span>
+          <span>Ready to start this exercise.</span>
+        </div>
+      )}
+    </div>
   );
-} 
+}
+
+// Export the calculation function for use elsewhere
+export { calculateExerciseProgress, type ProgressCalculation }; 

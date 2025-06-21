@@ -1,57 +1,32 @@
 import { uploadData, downloadData, remove, list } from 'aws-amplify/storage';
 import { getCurrentUser } from 'aws-amplify/auth';
-import { devStorageService } from './dev-storage-service';
 
-// Check if we're in development mode and Amplify is not configured
-const isDevelopment = process.env.NODE_ENV === 'development';
-const isAmplifyConfigured = () => {
-  try {
-    // Check if we have a real bucket name (not placeholder)
-    if (typeof window !== 'undefined') {
-      const amplifyConfig = (window as any).aws_amplify_config;
-      return amplifyConfig && 
-             amplifyConfig.storage && 
-             amplifyConfig.storage.bucket_name && 
-             amplifyConfig.storage.bucket_name !== 'placeholder';
-    }
-    return false;
-  } catch {
-    return false;
-  }
-};
+// Always use real Amplify storage and database
 
-// Mock storage for development
-class MockStorageService {
-  private mockFiles = new Map<string, { file: File; metadata: any }>();
-
-  async uploadFile(key: string, file: File, metadata: any): Promise<{ key: string; url: string }> {
-    // Create a blob URL for the file
-    const url = URL.createObjectURL(file);
-    this.mockFiles.set(key, { file, metadata });
-    
-    console.log(`[MOCK STORAGE] Uploaded file: ${key}`, { metadata });
-    
-    return { key, url };
-  }
-
-  async deleteFile(key: string): Promise<void> {
-    const fileData = this.mockFiles.get(key);
-    if (fileData) {
-      URL.revokeObjectURL(fileData.file.name);
-      this.mockFiles.delete(key);
-      console.log(`[MOCK STORAGE] Deleted file: ${key}`);
-    }
-  }
-
-  async listFiles(): Promise<Array<{ key: string; metadata?: any }>> {
-    return Array.from(this.mockFiles.entries()).map(([key, data]) => ({
-      key,
-      metadata: data.metadata
-    }));
-  }
+// Enhanced types for better semantic search
+export interface AssetSearchResult {
+  key: string;
+  url: string;
+  metadata: StorageMetadata;
+  score: number; // Relevance score
+  matchedFields: string[]; // Which fields matched the search
 }
 
-const mockStorage = new MockStorageService();
+export interface SemanticSearchOptions {
+  categories?: string[];
+  exerciseIds?: string[];
+  fileTypes?: string[];
+  tags?: string[];
+  dateRange?: {
+    start: Date;
+    end: Date;
+  };
+  mood?: string;
+  sortBy?: 'relevance' | 'date' | 'category' | 'type';
+  limit?: number;
+}
+
+// Real Amplify storage only - no mock data
 
 // Storage path constants
 export const STORAGE_PATHS = {
@@ -103,11 +78,22 @@ export interface UploadOptions {
 }
 
 class StorageService {
+
+  constructor() {
+    // Real Amplify storage - no mock data initialization
+  }
+
+
+
+  /**
+   * Get current user ID from Amplify Auth
+   */
   private async getCurrentUserId(): Promise<string> {
     try {
       const user = await getCurrentUser();
       return user.userId;
-    } catch {
+    } catch (error) {
+      console.error('Error getting current user:', error);
       throw new Error('User not authenticated');
     }
   }
@@ -150,7 +136,7 @@ class StorageService {
   }
 
   /**
-   * Generate comprehensive metadata for the file
+   * Generate comprehensive metadata for semantic search
    */
   private generateMetadata(
     userId: string,
@@ -158,31 +144,29 @@ class StorageService {
     fileType: string,
     options?: UploadOptions
   ): Record<string, string> {
-    const metadata: Record<string, string> = {
+    const tags = [
       userId,
+      fileType,
+      options?.category || '',
+      options?.exerciseId || '',
+      options?.responseType || '',
+      ...(options?.tags || [])
+    ].filter(Boolean);
+
+    return {
+      userId,
+      exerciseId: options?.exerciseId || '',
+      exerciseTitle: options?.exerciseTitle || '',
+      category: options?.category || '',
+      responseType: options?.responseType || '',
+      mood: options?.mood || '',
+      tags: (options?.tags || []).join(','),
       uploadDate: new Date().toISOString(),
       fileType,
       originalName,
-      // Add searchable tags
-      searchTags: [
-        userId,
-        fileType,
-        options?.category || '',
-        options?.exerciseId || '',
-        options?.responseType || '',
-        ...(options?.tags || [])
-      ].filter(Boolean).join(',')
+      description: options?.description || '',
+      searchTags: tags.join(',')
     };
-
-    if (options?.exerciseId) metadata.exerciseId = options.exerciseId;
-    if (options?.exerciseTitle) metadata.exerciseTitle = options.exerciseTitle;
-    if (options?.category) metadata.category = options.category;
-    if (options?.responseType) metadata.responseType = options.responseType;
-    if (options?.mood) metadata.mood = options.mood;
-    if (options?.description) metadata.description = options.description;
-    if (options?.tags?.length) metadata.tags = options.tags.join(',');
-
-    return metadata;
   }
 
   /**
@@ -213,37 +197,7 @@ class StorageService {
     options?: UploadOptions
   ): Promise<{ key: string; url: string; metadata: StorageMetadata }> {
     try {
-      // Use mock storage in development when Amplify is not configured
-      if (isDevelopment && !isAmplifyConfigured()) {
-        console.log('[DEV MODE] Using mock storage for file upload');
-        
-        const userId = 'dev-user-id'; // Mock user ID for development
-        const fileType = this.getFileType(file);
-        const filePath = this.generateFilePath(userId, STORAGE_PATHS.PLAYBOOK, file.name, options);
-        const metadata = this.generateMetadata(userId, file.name, fileType, options);
-
-        const result = await devStorageService.uploadFile(filePath, file, metadata);
-        
-        return {
-          key: result.key,
-          url: result.url,
-          metadata: {
-            userId,
-            exerciseId: options?.exerciseId,
-            exerciseTitle: options?.exerciseTitle,
-            category: options?.category,
-            responseType: options?.responseType,
-            mood: options?.mood,
-            tags: options?.tags,
-            uploadDate: new Date().toISOString(),
-            fileType,
-            originalName: file.name,
-            description: options?.description
-          }
-        };
-      }
-
-      // Production Amplify storage
+      // Always use Amplify storage (real database and S3)
       const userId = await this.getCurrentUserId();
       const fileType = this.getFileType(file);
       const filePath = this.generateFilePath(userId, STORAGE_PATHS.PLAYBOOK, file.name, options);
@@ -329,6 +283,7 @@ class StorageService {
     limit?: number;
   }): Promise<Array<{ key: string; metadata?: StorageMetadata }>> {
     try {
+      // Always use Amplify storage
       const userId = await this.getCurrentUserId();
       let prefix = `users/${userId}/${STORAGE_PATHS.PLAYBOOK}/`;
       
@@ -362,6 +317,7 @@ class StorageService {
    */
   async getAssetUrl(key: string): Promise<string> {
     try {
+      // Always use Amplify storage
       const result = await downloadData({
         key
       }).result;
@@ -378,12 +334,7 @@ class StorageService {
    */
   async deleteAsset(key: string): Promise<void> {
     try {
-      // Use mock storage in development when Amplify is not configured
-      if (isDevelopment && !isAmplifyConfigured()) {
-        console.log('[DEV MODE] Using mock storage for file deletion');
-        await devStorageService.deleteFile(key);
-        return;
-      }
+      // Always use Amplify storage
 
       // Production Amplify storage
       await remove({ key });
@@ -394,32 +345,122 @@ class StorageService {
   }
 
   /**
-   * Search assets by metadata tags
+   * Enhanced semantic search with scoring and advanced filtering
    */
-  async searchAssets(searchTerm: string): Promise<Array<{ key: string; metadata?: StorageMetadata }>> {
+  async semanticSearch(
+    searchTerm: string, 
+    options: SemanticSearchOptions = {}
+  ): Promise<AssetSearchResult[]> {
     try {
       const allAssets = await this.listPlaybookAssets();
-      
       const searchTermLower = searchTerm.toLowerCase();
-      
-      return allAssets.filter(asset => {
-        if (!asset.metadata) return false;
-        
-        const searchableText = [
-          asset.metadata.exerciseTitle,
-          asset.metadata.category,
-          asset.metadata.mood,
-          asset.metadata.description,
-          asset.metadata.originalName,
-          ...(asset.metadata.tags || [])
-        ].filter(Boolean).join(' ').toLowerCase();
-        
-        return searchableText.includes(searchTermLower);
+      const results: AssetSearchResult[] = [];
+
+      for (const asset of allAssets) {
+        if (!asset.metadata) continue;
+
+        // Apply filters first
+        if (options.categories && !options.categories.includes(asset.metadata.category || '')) continue;
+        if (options.exerciseIds && !options.exerciseIds.includes(asset.metadata.exerciseId || '')) continue;
+        if (options.fileTypes && !options.fileTypes.includes(asset.metadata.fileType || '')) continue;
+        if (options.mood && asset.metadata.mood !== options.mood) continue;
+        if (options.tags && !options.tags.some(tag => {
+          if (Array.isArray(asset.metadata.tags)) {
+            return asset.metadata.tags.includes(tag);
+          } else if (typeof asset.metadata.tags === 'string') {
+            return asset.metadata.tags.includes(tag);
+          }
+          return false;
+        })) continue;
+
+        // Date range filter
+        if (options.dateRange) {
+          const uploadDate = new Date(asset.metadata.uploadDate);
+          if (uploadDate < options.dateRange.start || uploadDate > options.dateRange.end) continue;
+        }
+
+        // Calculate relevance score
+        let score = 0;
+        const matchedFields: string[] = [];
+
+        // Search in different fields with different weights
+        const searchableFields = [
+          { field: 'exerciseTitle', weight: 3, value: asset.metadata.exerciseTitle },
+          { field: 'description', weight: 2.5, value: asset.metadata.description },
+          { field: 'category', weight: 2, value: asset.metadata.category },
+          { field: 'originalName', weight: 2, value: asset.metadata.originalName },
+          { field: 'mood', weight: 1.5, value: asset.metadata.mood },
+          { field: 'tags', weight: 1.5, value: Array.isArray(asset.metadata.tags) 
+            ? asset.metadata.tags.join(' ') 
+            : (typeof asset.metadata.tags === 'string' ? asset.metadata.tags : '') }
+        ];
+
+        for (const { field, weight, value } of searchableFields) {
+          if (value && value.toLowerCase().includes(searchTermLower)) {
+            score += weight;
+            matchedFields.push(field);
+            
+            // Boost score for exact matches
+            if (value.toLowerCase() === searchTermLower) {
+              score += weight * 0.5;
+            }
+            
+            // Boost score for word boundary matches
+            if (new RegExp(`\\b${searchTermLower}\\b`).test(value.toLowerCase())) {
+              score += weight * 0.3;
+            }
+          }
+        }
+
+        if (score > 0) {
+          const url = await this.getAssetUrl(asset.key);
+          results.push({
+            key: asset.key,
+            url,
+            metadata: asset.metadata,
+            score,
+            matchedFields
+          });
+        }
+      }
+
+      // Sort results
+      const sortBy = options.sortBy || 'relevance';
+      results.sort((a, b) => {
+        switch (sortBy) {
+          case 'date':
+            return new Date(b.metadata.uploadDate).getTime() - new Date(a.metadata.uploadDate).getTime();
+          case 'category':
+            return (a.metadata.category || '').localeCompare(b.metadata.category || '');
+          case 'type':
+            return (a.metadata.fileType || '').localeCompare(b.metadata.fileType || '');
+          case 'relevance':
+          default:
+            return b.score - a.score;
+        }
       });
+
+      // Apply limit
+      if (options.limit) {
+        return results.slice(0, options.limit);
+      }
+
+      return results;
     } catch (error) {
-      console.error('Error searching assets:', error);
+      console.error('Error in semantic search:', error);
       throw new Error(`Failed to search assets: ${error}`);
     }
+  }
+
+  /**
+   * Search assets by metadata tags (legacy method for backward compatibility)
+   */
+  async searchAssets(searchTerm: string): Promise<Array<{ key: string; metadata?: StorageMetadata }>> {
+    const results = await this.semanticSearch(searchTerm);
+    return results.map(result => ({
+      key: result.key,
+      metadata: result.metadata
+    }));
   }
 
   /**
@@ -461,6 +502,99 @@ class StorageService {
     } catch (error) {
       console.error('Error getting category assets:', error);
       throw new Error(`Failed to get category assets: ${error}`);
+    }
+  }
+
+  /**
+   * Get asset statistics for dashboard/insights
+   */
+  async getAssetStats(): Promise<{
+    totalAssets: number;
+    assetsByType: Record<string, number>;
+    assetsByCategory: Record<string, number>;
+    recentAssets: Array<{ key: string; url: string; metadata: StorageMetadata }>;
+  }> {
+    try {
+      const allAssets = await this.listPlaybookAssets();
+      const stats = {
+        totalAssets: allAssets.length,
+        assetsByType: {} as Record<string, number>,
+        assetsByCategory: {} as Record<string, number>,
+        recentAssets: [] as Array<{ key: string; url: string; metadata: StorageMetadata }>
+      };
+
+      const assetsWithMetadata = await Promise.all(
+        allAssets.slice(0, 20).map(async (asset) => {
+          const url = await this.getAssetUrl(asset.key);
+          return { ...asset, url };
+        })
+      );
+
+      // Calculate statistics
+      for (const asset of assetsWithMetadata) {
+        if (asset.metadata) {
+          // Count by type
+          const type = asset.metadata.fileType || 'unknown';
+          stats.assetsByType[type] = (stats.assetsByType[type] || 0) + 1;
+
+          // Count by category
+          const category = asset.metadata.category || 'uncategorized';
+          stats.assetsByCategory[category] = (stats.assetsByCategory[category] || 0) + 1;
+        }
+      }
+
+      // Get recent assets (sorted by upload date)
+      stats.recentAssets = assetsWithMetadata
+        .filter(asset => asset.metadata)
+        .sort((a, b) => new Date(b.metadata!.uploadDate).getTime() - new Date(a.metadata!.uploadDate).getTime())
+        .slice(0, 10) as Array<{ key: string; url: string; metadata: StorageMetadata }>;
+
+      return stats;
+    } catch (error) {
+      console.error('Error getting asset stats:', error);
+      throw new Error(`Failed to get asset statistics: ${error}`);
+    }
+  }
+
+  /**
+   * Bulk operations for asset management
+   */
+  async bulkDeleteAssets(keys: string[]): Promise<{ succeeded: string[]; failed: string[] }> {
+    const succeeded: string[] = [];
+    const failed: string[] = [];
+
+    for (const key of keys) {
+      try {
+        await this.deleteAsset(key);
+        succeeded.push(key);
+      } catch (error) {
+        console.error(`Failed to delete asset ${key}:`, error);
+        failed.push(key);
+      }
+    }
+
+    return { succeeded, failed };
+  }
+
+  /**
+   * Update asset metadata (tags, description, etc.)
+   */
+  async updateAssetMetadata(key: string, updates: Partial<StorageMetadata>): Promise<void> {
+    try {
+      // Note: S3 doesn't support metadata updates directly
+      // This would require re-uploading the file with new metadata
+      // For now, we'll just log the intent
+      console.log(`[STORAGE] Update metadata for ${key}:`, updates);
+      
+      // In a real implementation, you might:
+      // 1. Download the current file
+      // 2. Re-upload with new metadata
+      // 3. Delete the old file
+      
+      throw new Error('Metadata updates not implemented yet - requires file re-upload');
+    } catch (error) {
+      console.error('Error updating asset metadata:', error);
+      throw new Error(`Failed to update metadata: ${error}`);
     }
   }
 }

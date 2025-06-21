@@ -20,7 +20,7 @@ import {
   Image as ImageIcon,
   Add,
 } from '@mui/icons-material';
-import { storageService, UploadOptions } from '@/lib/storage-service';
+import { storageService } from '@/lib/storage-service';
 
 export interface ImageData {
   id: string;
@@ -82,19 +82,49 @@ export default function ImageUpload({
   };
 
   const uploadFile = async (file: File, description?: string): Promise<ImageData> => {
-    const uploadOptions: UploadOptions = {
+    const uploadOptions = {
       exerciseId,
       exerciseTitle,
       category,
       responseType,
       mood,
-      tags: [...tags, 'image'],
+      tags,
       description
     };
 
     try {
+      // Upload to storage service
       const result = await storageService.uploadPlaybookAsset(file, uploadOptions);
       
+      // Save to database via API route instead of direct import
+      try {
+        const response = await fetch('/api/media/save-asset', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            s3Key: result.key,
+            s3Bucket: 'north-playbook',
+            fileName: file.name,
+            fileType: 'image',
+            fileSize: file.size,
+            mimeType: file.type,
+            exerciseId: uploadOptions?.exerciseId,
+            category: uploadOptions?.category,
+            tags: uploadOptions?.tags,
+            description: uploadOptions?.description
+          }),
+        });
+
+        if (!response.ok) {
+          console.warn('Failed to save media asset to database via API');
+        }
+      } catch (dbError) {
+        console.warn('Failed to save media asset to database:', dbError);
+        // Continue anyway - the file is still uploaded to storage
+      }
+
       return {
         id: result.key, // Use S3 key as ID
         name: file.name,
