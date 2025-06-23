@@ -443,7 +443,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/zWNQQ6CMBBFz8K+jAgudCkmLo2BA5ChHUmhtAnTSgzp3Q2gq/d+3uLncLycIUtw5lSqITW6heVB7EnVHuUgcOZm0TjCUjlD4vayG5/OaPlZ525RGBxbhbDcg5VeO7u2v0fBRYPM5BmuKwQXUAY5kC+RKYqK2IVJkthq7bHTttvOfiEK6xRBz4d3nsHxBFnSs9bpFKzXI0G18wt/JXmJzwAAAA=="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/zWNTQ6CMBBGz8K+jFi8gJi4NAYOQIZ2JOWnTZhWYpre3QC6eu/LW3wSZCGhyHDlXOkxn0wH8UHsSTce1Shw5TYanCHWbiJxe9mdTzcZ9dnmYUlMOHcaId6DVd44u7W/J8Fli8zkGa4bBJdQBTWSr5ApiZrYhUWR2GvjsTe2389+IQnrNMHAp7cs4HyBIhvYmHwJ1puZoD74BQcRMDPPAAAA"
    },
    "Metadata": {
     "aws:cdk:path": "amplify-northplaybook-actwr-sandbox-b72e1d22f0/data/amplifyData/AmplifyTableManager/CDKMetadata/Default"

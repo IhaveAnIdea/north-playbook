@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { useUserRole } from '@/hooks/useUserRole';
+import RichTextEditor from '@/components/ui/RichTextEditor';
 import type { Schema } from '../../../amplify/data/resource';
 
 const client = generateClient<Schema>();
@@ -28,7 +29,7 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel }: Exercis
   const [exercise, setExercise] = useState<{
     title: string;
     description: string;
-    category: 'mindset' | 'motivation' | 'goals' | 'reflection' | 'gratitude' | 'vision';
+    category: string;
     question: string;
     instructions: string;
     // Required response types
@@ -47,7 +48,7 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel }: Exercis
   }>({
     title: '',
     description: '',
-    category: 'mindset',
+    category: 'achievement_based_identity',
     question: '',
     instructions: '',
     requireText: false,
@@ -78,7 +79,7 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel }: Exercis
         setExercise({
           title: data.title || '',
           description: data.description || '',
-          category: (data.category as 'mindset' | 'motivation' | 'goals' | 'reflection' | 'gratitude' | 'vision') || 'mindset',
+          category: data.category || 'achievement_based_identity',
           question: data.question || '',
           instructions: data.instructions || '',
           requireText: data.requireText ?? false,
@@ -380,17 +381,44 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel }: Exercis
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Category
             </label>
-            <select
+                          <select
               value={exercise.category}
               onChange={(e) => setExercise(prev => ({ ...prev, category: e.target.value as typeof exercise.category }))}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="mindset">Mindset</option>
-              <option value="motivation">Motivation</option>
-              <option value="goals">Goals</option>
-              <option value="reflection">Reflection</option>
+              <option value="achievement_based_identity">Achievement-based identity</option>
+              <option value="connection_and_belonging">Connection & Belonging</option>
+              <option value="connection_to_nature">Connection to Nature</option>
+              <option value="creative_expression">Creative Expression</option>
+              <option value="diet_and_nutrition">Diet & Nutrition</option>
+              <option value="emotional_re_appraisal">Emotional Re-Appraisal</option>
+              <option value="exercise">Exercise</option>
+              <option value="goal_attainment">Goal Attainment</option>
+              <option value="goal_pursuit">Goal Pursuit</option>
+              <option value="goal_resilience">Goal Resilience</option>
               <option value="gratitude">Gratitude</option>
-              <option value="vision">Vision</option>
+              <option value="habit_formation">Habit Formation</option>
+              <option value="high_standard_friends">High-Standard Friends</option>
+              <option value="long_term_focus">Long-Term Focus</option>
+              <option value="loving_relationships">Loving Relationships</option>
+              <option value="meaning">Meaning</option>
+              <option value="mindfulness_practice">Mindfulness Practice</option>
+              <option value="perfectionism">Perfectionism</option>
+              <option value="purpose">Purpose</option>
+              <option value="purpose_based_identity">Purpose-based identity</option>
+              <option value="purpose_beyond_self">Purpose Beyond Self</option>
+              <option value="rumination">Rumination</option>
+              <option value="self_auditing">Self-Auditing</option>
+              <option value="self_awareness">Self-Awareness</option>
+              <option value="self_compassion">Self-Compassion</option>
+              <option value="self_talk">Self-Talk</option>
+              <option value="self_worth">Self-Worth</option>
+              <option value="sleep_and_rest">Sleep and Rest</option>
+              <option value="substance_use">Substance Use</option>
+              <option value="success_comparison">Success Comparison</option>
+              <option value="tribe">Tribe</option>
+              <option value="vulnerability">Vulnerability</option>
+              <option value="worry">Worry</option>
             </select>
           </div>
         </div>
@@ -400,12 +428,11 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel }: Exercis
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Description (Narrative)
           </label>
-          <textarea
+          <RichTextEditor
             value={exercise.description}
-            onChange={(e) => setExercise(prev => ({ ...prev, description: e.target.value }))}
-            rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(content) => setExercise(prev => ({ ...prev, description: content }))}
             placeholder="Enter the exercise description and narrative..."
+            id="exercise-description"
           />
         </div>
 
@@ -414,12 +441,11 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel }: Exercis
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Question
           </label>
-          <input
-            type="text"
+          <RichTextEditor
             value={exercise.question}
-            onChange={(e) => setExercise(prev => ({ ...prev, question: e.target.value }))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(content) => setExercise(prev => ({ ...prev, question: content }))}
             placeholder="Enter the exercise question"
+            id="exercise-question"
           />
         </div>
 
@@ -428,12 +454,11 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel }: Exercis
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Instructions for Users
           </label>
-          <textarea
+          <RichTextEditor
             value={exercise.instructions}
-            onChange={(e) => setExercise(prev => ({ ...prev, instructions: e.target.value }))}
-            rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(content) => setExercise(prev => ({ ...prev, instructions: content }))}
             placeholder="Enter detailed instructions for users on how to complete this exercise..."
+            id="exercise-instructions"
           />
           <p className="text-sm text-gray-500 mt-1">
             These instructions will be shown to users before they start the exercise

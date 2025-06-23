@@ -64,17 +64,19 @@ export default function ExercisePreviewModal({ exercise, open, onClose }: Exerci
       </DialogTitle>
       
       <DialogContent>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-          {exercise.description}
-        </Typography>
+        <div 
+          className="text-gray-600 mb-6 prose prose-sm max-w-none rich-text-content"
+          dangerouslySetInnerHTML={{ __html: exercise.description }}
+        />
         
         <Box sx={{ p: 3, bgcolor: 'primary.light', borderRadius: 2, color: 'primary.contrastText' }}>
           <Typography variant="h6" gutterBottom>
             Exercise Question:
           </Typography>
-          <Typography variant="body1">
-            {exercise.question}
-          </Typography>
+          <div 
+            className="prose prose-sm max-w-none rich-text-content text-white"
+            dangerouslySetInnerHTML={{ __html: exercise.question }}
+          />
         </Box>
         
         <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>

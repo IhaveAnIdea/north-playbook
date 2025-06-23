@@ -34,16 +34,6 @@ export function calculateExerciseProgress(
   response?: ExerciseResponse
 ): ProgressCalculation {
   const totalRequirements = Object.values(requirements).filter(Boolean).length;
-  
-  // DEBUG: Log requirements check
-  console.log('  [calculateExerciseProgress] Requirements check:');
-  console.log('    requireText:', requirements.requireText);
-  console.log('    requireImage:', requirements.requireImage);
-  console.log('    requireAudio:', requirements.requireAudio);
-  console.log('    requireVideo:', requirements.requireVideo);
-  console.log('    requireDocument:', requirements.requireDocument);
-  console.log('    totalRequirements:', totalRequirements);
-  
   let completedRequirements = 0;
   const missingRequirements: string[] = [];
   const completedRequirements_list: string[] = [];
@@ -100,41 +90,19 @@ export function calculateExerciseProgress(
 
   const percentageComplete = totalRequirements > 0 ? (completedRequirements / totalRequirements) * 100 : 100;
   const hasAllRequirements = completedRequirements === totalRequirements && totalRequirements > 0;
-  
-  // DEBUG: Log calculation results
-  console.log('  [calculateExerciseProgress] Calculation results:');
-  console.log('    completedRequirements:', completedRequirements);
-  console.log('    totalRequirements:', totalRequirements);
-  console.log('    percentageComplete:', percentageComplete);
-  console.log('    hasAllRequirements:', hasAllRequirements);
-  console.log('    missingRequirements:', missingRequirements);
-  console.log('    completedRequirements_list:', completedRequirements_list);
 
   // Determine exercise state based on response existence and completion status
   let state: ExerciseState;
   
-  // DEBUG: Log the decision making process
-  console.log('  [calculateExerciseProgress] Response data check:');
-  console.log('    response exists:', !!response);
-  console.log('    responseText:', !!response?.responseText);
-  console.log('    imageS3Keys:', response?.imageS3Keys?.length || 0);
-  console.log('    audioS3Key:', !!response?.audioS3Key);
-  console.log('    videoS3Key:', !!response?.videoS3Key);
-  console.log('    documentS3Keys:', response?.documentS3Keys?.length || 0);
-  console.log('    response.status:', response?.status);
-  
   if (!response || (!response.responseText && !response.imageS3Keys?.length && !response.audioS3Key && !response.videoS3Key && !response.documentS3Keys?.length)) {
     // No meaningful response data exists
     state = 'unstarted';
-    console.log('    Decision: unstarted (no meaningful response data)');
   } else if (response.status === 'completed') {
     // User has explicitly completed the exercise
     state = 'completed';
-    console.log('    Decision: completed (status = completed)');
   } else {
     // User has started but not completed (either missing requirements or saved as draft)
     state = 'incomplete';
-    console.log('    Decision: incomplete (has data but not completed)');
   }
   
   // SPECIAL CASE: If an exercise has no requirements and no response, it should be 'unstarted'
@@ -142,10 +110,8 @@ export function calculateExerciseProgress(
   if (totalRequirements === 0) {
     if (!response || (!response.responseText && !response.imageS3Keys?.length && !response.audioS3Key && !response.videoS3Key && !response.documentS3Keys?.length)) {
       state = 'unstarted';
-      console.log('    Decision OVERRIDE: unstarted (no requirements, no response)');
     } else {
       state = 'completed';
-      console.log('    Decision OVERRIDE: completed (no requirements, has response)');
     }
   }
 

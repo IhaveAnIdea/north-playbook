@@ -124,46 +124,52 @@ export default function ExerciseResponsesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-8">
         {/* Exercise Header */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{exercise.title}</h1>
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:items-start sm:space-y-0">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 break-words">{exercise.title}</h1>
               <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 mt-2">
                 {exercise.category}
               </span>
-              <p className="text-gray-600 mt-3">{exercise.description}</p>
-              <div className="mt-4 p-4 bg-blue-50 rounded-md">
-                <h3 className="font-medium text-blue-900 mb-2">Exercise Question:</h3>
-                <p className="text-blue-800">{exercise.question}</p>
+              <div 
+                className="text-gray-600 mt-3 text-sm sm:text-base prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: exercise.description }}
+              />
+              <div className="mt-4 p-3 sm:p-4 bg-blue-50 rounded-md">
+                <h3 className="font-medium text-blue-900 mb-2 text-sm sm:text-base">Exercise Question:</h3>
+                <div 
+                  className="text-blue-800 text-sm sm:text-base prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ __html: exercise.question }}
+                />
               </div>
             </div>
           </div>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-red-800">{error}</p>
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-red-800 text-sm sm:text-base">{error}</p>
           </div>
         )}
 
         {/* Action Buttons */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">
+        <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:items-center sm:space-y-0 mb-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
             Your Responses ({responses.length})
           </h2>
-          <div className="flex space-x-3">
+          <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
             <Link
               href={`/exercises/${exerciseId}`}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-center font-medium text-sm transition-colors touch-manipulation"
             >
               Complete Again
             </Link>
             <Link
               href="/exercises"
-              className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 text-center font-medium text-sm transition-colors touch-manipulation"
             >
               Back to Exercises
             </Link>
@@ -172,66 +178,74 @@ export default function ExerciseResponsesPage() {
 
         {/* Responses List */}
         {responses.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg shadow-md">
-            <div className="text-6xl mb-4">📝</div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No responses yet</h3>
-            <p className="text-gray-600 mb-6">You haven't completed this exercise yet</p>
+          <div className="text-center py-8 sm:py-12 bg-white rounded-lg shadow-md">
+            <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">📝</div>
+            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No responses yet</h3>
+            <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">You haven&apos;t completed this exercise yet</p>
             <Link
               href={`/exercises/${exerciseId}`}
-              className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium transition-colors touch-manipulation"
             >
               Complete Exercise
             </Link>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {responses.map((response, index) => (
-              <div key={response.id} className="bg-white rounded-lg shadow-md p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center space-x-4">
-                    <h3 className="text-lg font-semibold text-gray-900">
+              <div key={response.id} className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+                <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:items-start sm:space-y-0 mb-4">
+                  <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                       Response #{responses.length - index}
                     </h3>
-                    {response.mood && (
-                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                        {response.mood}
-                      </span>
-                    )}
-                    {response.confidence && (
-                      <span className="text-sm text-gray-600">
-                        Confidence: {response.confidence}/10
-                      </span>
-                    )}
+                    <div className="flex flex-wrap gap-2">
+                      {response.mood && (
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                          {response.mood}
+                        </span>
+                      )}
+                      {response.confidence && (
+                        <span className="text-sm text-gray-600">
+                          Confidence: {response.confidence}/10
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="text-sm text-gray-500">
                     {new Date(response.updatedAt).toLocaleDateString()}
                   </div>
                 </div>
 
-                {/* Response Content */}
+                {/* Response Content - Fixed HTML Rendering */}
                 {response.responseText && (
                   <div className="mb-4">
-                    <h4 className="font-medium text-gray-900 mb-2">Response:</h4>
-                    <p className="text-gray-700 bg-gray-50 p-3 rounded-md whitespace-pre-wrap">
-                      {response.responseText}
-                    </p>
+                    <h4 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">Response:</h4>
+                    <div className="text-gray-700 bg-gray-50 p-3 rounded-md prose prose-sm max-w-none">
+                      <div 
+                        className="rich-text-content"
+                        dangerouslySetInnerHTML={{ __html: response.responseText }}
+                      />
+                    </div>
                   </div>
                 )}
 
-                {/* Insights */}
+                {/* Insights - Fixed HTML Rendering */}
                 {response.insights && (
                   <div className="mb-4">
-                    <h4 className="font-medium text-gray-900 mb-2">Personal Insights:</h4>
-                    <p className="text-gray-700 bg-blue-50 p-3 rounded-md whitespace-pre-wrap">
-                      {response.insights}
-                    </p>
+                    <h4 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">Personal Insights:</h4>
+                    <div className="text-gray-700 bg-blue-50 p-3 rounded-md prose prose-sm max-w-none">
+                      <div 
+                        className="rich-text-content"
+                        dangerouslySetInnerHTML={{ __html: response.insights }}
+                      />
+                    </div>
                   </div>
                 )}
 
                 {/* Tags */}
                 {response.tags && response.tags.length > 0 && (
                   <div className="mb-4">
-                    <h4 className="font-medium text-gray-900 mb-2">Tags:</h4>
+                    <h4 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">Tags:</h4>
                     <div className="flex flex-wrap gap-2">
                       {response.tags.map((tag, tagIndex) => (
                         <span
@@ -248,16 +262,17 @@ export default function ExerciseResponsesPage() {
                 {/* Image Thumbnails */}
                 {response.imageS3Keys && response.imageS3Keys.length > 0 && (
                   <div className="mb-4">
-                    <h4 className="font-medium text-gray-900 mb-2">
+                    <h4 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">
                       Images ({response.imageS3Keys.length}):
                     </h4>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 overflow-x-auto pb-1">
                       {response.imageS3Keys.map((s3Key, index) => (
                         <ImageThumbnail 
                           key={index} 
                           s3Key={s3Key} 
                           alt={`Response image ${index + 1}`}
                           size="md"
+                          className="flex-shrink-0"
                         />
                       ))}
                     </div>
@@ -265,18 +280,18 @@ export default function ExerciseResponsesPage() {
                 )}
 
                 {/* Actions */}
-                <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-                  <div className="flex space-x-4">
+                <div className="flex flex-col space-y-2 sm:flex-row sm:justify-between sm:items-center sm:space-y-0 pt-4 border-t border-gray-200">
+                  <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-4">
                     <Link
                       href={`/exercises/${exerciseId}/response/${response.id}/edit`}
-                      className="text-green-600 hover:text-green-800 text-sm font-medium"
+                      className="text-green-600 hover:text-green-800 text-sm font-medium text-center sm:text-left touch-manipulation"
                     >
                       Edit Response
                     </Link>
                   </div>
                   <button
                     onClick={() => deleteResponse(response.id)}
-                    className="text-red-600 hover:text-red-800 text-sm font-medium"
+                    className="text-red-600 hover:text-red-800 text-sm font-medium touch-manipulation"
                   >
                     Delete
                   </button>

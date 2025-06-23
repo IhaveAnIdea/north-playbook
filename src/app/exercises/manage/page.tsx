@@ -21,12 +21,17 @@ interface Exercise {
   updatedAt: string;
 }
 
+type SortField = 'title' | 'category' | 'promptType' | 'isActive' | 'updatedAt';
+type SortDirection = 'asc' | 'desc';
+
 export default function ExerciseManagePage() {
   const { user, authStatus } = useAuthenticator((context) => [context.user, context.authStatus]);
   const { isAdmin, isLoading: roleLoading } = useUserRole();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sortField, setSortField] = useState<SortField>('updatedAt');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   useEffect(() => {
     if (authStatus === 'authenticated' && user && isAdmin) {
@@ -76,6 +81,105 @@ export default function ExerciseManagePage() {
       setError('Failed to delete exercise');
     }
   };
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return '↕️'; // Neutral sort icon
+    }
+    return sortDirection === 'asc' ? '⬆️' : '⬇️';
+  };
+
+  const getCategoryDisplayName = (category: string) => {
+    const displayNames: Record<string, string> = {
+      achievement_based_identity: 'Achievement-based identity',
+      connection_and_belonging: 'Connection & Belonging',
+      connection_to_nature: 'Connection to Nature',
+      creative_expression: 'Creative Expression',
+      diet_and_nutrition: 'Diet & Nutrition',
+      emotional_re_appraisal: 'Emotional Re-Appraisal',
+      exercise: 'Exercise',
+      goal_attainment: 'Goal Attainment',
+      goal_pursuit: 'Goal Pursuit',
+      goal_resilience: 'Goal Resilience',
+      gratitude: 'Gratitude',
+      habit_formation: 'Habit Formation',
+      high_standard_friends: 'High-Standard Friends',
+      long_term_focus: 'Long-Term Focus',
+      loving_relationships: 'Loving Relationships',
+      meaning: 'Meaning',
+      mindfulness_practice: 'Mindfulness Practice',
+      perfectionism: 'Perfectionism',
+      purpose: 'Purpose',
+      purpose_based_identity: 'Purpose-based identity',
+      purpose_beyond_self: 'Purpose Beyond Self',
+      rumination: 'Rumination',
+      self_auditing: 'Self-Auditing',
+      self_awareness: 'Self-Awareness',
+      self_compassion: 'Self-Compassion',
+      self_talk: 'Self-Talk',
+      self_worth: 'Self-Worth',
+      sleep_and_rest: 'Sleep and Rest',
+      substance_use: 'Substance Use',
+      success_comparison: 'Success Comparison',
+      tribe: 'Tribe',
+      vulnerability: 'Vulnerability',
+      worry: 'Worry',
+      // Legacy categories for backward compatibility
+      mindset: 'Mindset',
+      motivation: 'Motivation',
+      goals: 'Goals',
+      reflection: 'Reflection',
+      vision: 'Vision',
+    };
+    return displayNames[category] || category;
+  };
+
+  const sortedExercises = [...exercises].sort((a, b) => {
+    let aValue: string | number;
+    let bValue: string | number;
+
+    switch (sortField) {
+      case 'title':
+        aValue = a.title.toLowerCase();
+        bValue = b.title.toLowerCase();
+        break;
+      case 'category':
+        aValue = getCategoryDisplayName(a.category).toLowerCase();
+        bValue = getCategoryDisplayName(b.category).toLowerCase();
+        break;
+      case 'promptType':
+        aValue = a.promptType.toLowerCase();
+        bValue = b.promptType.toLowerCase();
+        break;
+      case 'isActive':
+        aValue = a.isActive ? 1 : 0;
+        bValue = b.isActive ? 1 : 0;
+        break;
+      case 'updatedAt':
+        aValue = new Date(a.updatedAt).getTime();
+        bValue = new Date(b.updatedAt).getTime();
+        break;
+      default:
+        return 0;
+    }
+
+    if (aValue < bValue) {
+      return sortDirection === 'asc' ? -1 : 1;
+    }
+    if (aValue > bValue) {
+      return sortDirection === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
 
   if (roleLoading || (authStatus === 'configuring')) {
     return (
@@ -158,20 +262,50 @@ export default function ExerciseManagePage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Exercise
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      onClick={() => handleSort('title')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Exercise</span>
+                        <span className="text-sm">{getSortIcon('title')}</span>
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Category
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      onClick={() => handleSort('category')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Category</span>
+                        <span className="text-sm">{getSortIcon('category')}</span>
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Type
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      onClick={() => handleSort('promptType')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Type</span>
+                        <span className="text-sm">{getSortIcon('promptType')}</span>
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      onClick={() => handleSort('isActive')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Status</span>
+                        <span className="text-sm">{getSortIcon('isActive')}</span>
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Updated
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      onClick={() => handleSort('updatedAt')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Updated</span>
+                        <span className="text-sm">{getSortIcon('updatedAt')}</span>
+                      </div>
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
@@ -179,21 +313,22 @@ export default function ExerciseManagePage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {exercises.map((exercise) => (
+                  {sortedExercises.map((exercise) => (
                     <tr key={exercise.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div>
                           <div className="text-sm font-medium text-gray-900">
                             {exercise.title}
                           </div>
-                          <div className="text-sm text-gray-500 line-clamp-2">
-                            {exercise.question}
-                          </div>
+                          <div 
+                            className="text-sm text-gray-500 line-clamp-2 prose prose-sm max-w-none rich-text-content"
+                            dangerouslySetInnerHTML={{ __html: exercise.question }}
+                          />
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                          {exercise.category}
+                          {getCategoryDisplayName(exercise.category)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

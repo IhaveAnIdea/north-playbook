@@ -13,13 +13,30 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     }
     const { id } = params;
     const body = await request.json();
-    const { description } = body;
-    if (!description) {
-      return new NextResponse('Description is required', { status: 400 });
-    }
+    
+    // Build update object with all possible fields
+    const updateData: Record<string, unknown> = {};
+    
+    if (body.title !== undefined) updateData.title = body.title;
+    if (body.description !== undefined) updateData.description = body.description;
+    if (body.category !== undefined) updateData.category = body.category;
+    if (body.question !== undefined) updateData.question = body.question;
+    if (body.instructions !== undefined) updateData.instructions = body.instructions;
+    if (body.requireText !== undefined) updateData.requireText = body.requireText;
+    if (body.requireImage !== undefined) updateData.requireImage = body.requireImage;
+    if (body.requireAudio !== undefined) updateData.requireAudio = body.requireAudio;
+    if (body.requireVideo !== undefined) updateData.requireVideo = body.requireVideo;
+    if (body.requireDocument !== undefined) updateData.requireDocument = body.requireDocument;
+    if (body.textPrompt !== undefined) updateData.textPrompt = body.textPrompt;
+    if (body.maxTextLength !== undefined) updateData.maxTextLength = body.maxTextLength;
+    if (body.allowMultipleImages !== undefined) updateData.allowMultipleImages = body.allowMultipleImages;
+    if (body.allowMultipleDocuments !== undefined) updateData.allowMultipleDocuments = body.allowMultipleDocuments;
+    if (body.allowEditingCompleted !== undefined) updateData.allowEditingCompleted = body.allowEditingCompleted;
+    if (body.isActive !== undefined) updateData.isActive = body.isActive;
+    
     const updatedExercise = await client.models.Exercise.update({
       id,
-      description
+      ...updateData,
     });
     return NextResponse.json(updatedExercise);
   } catch (error) {

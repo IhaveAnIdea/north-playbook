@@ -1,0 +1,1350 @@
+type UserProfile @aws_iam @aws_cognito_user_pools {
+  userId: ID!
+  firstName: String!
+  lastName: String!
+  email: AWSEmail!
+  role: UserProfileRole
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  id: ID!
+  owner: String
+}
+
+type Exercise @aws_iam @aws_cognito_user_pools {
+  title: String!
+  description: String!
+  category: ExerciseCategory
+  question: String!
+  instructions: String
+  requireText: Boolean
+  requireImage: Boolean
+  requireAudio: Boolean
+  requireVideo: Boolean
+  requireDocument: Boolean
+  textPrompt: String
+  maxTextLength: Int
+  allowMultipleImages: Boolean
+  allowMultipleDocuments: Boolean
+  allowEditingCompleted: Boolean
+  isActive: Boolean
+  order: Int
+  createdAt: AWSDateTime
+  createdBy: ID
+  responses(filter: ModelExerciseResponseFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelExerciseResponseConnection
+  mediaAssets(filter: ModelMediaAssetFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelMediaAssetConnection
+  userProgress(filter: ModelUserProgressFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelUserProgressConnection
+  id: ID!
+  updatedAt: AWSDateTime!
+}
+
+type ExerciseResponse @aws_iam @aws_cognito_user_pools {
+  exerciseId: ID!
+  userId: ID!
+  responseText: String
+  audioS3Key: String
+  videoS3Key: String
+  videoS3Keys: [String]
+  imageS3Keys: [String]
+  documentS3Keys: [String]
+  notes: String
+  s3Bucket: String
+  status: ExerciseResponseStatus
+  completedAt: AWSDateTime
+  timeSpentSeconds: Int
+  analysisResult: AWSJSON
+  insights: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  exercise: Exercise
+  playbookEntries(filter: ModelPlaybookEntryFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelPlaybookEntryConnection
+  mediaAssets(filter: ModelMediaAssetFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelMediaAssetConnection
+  id: ID!
+  owner: String
+}
+
+type PlaybookEntry @aws_iam @aws_cognito_user_pools {
+  userId: ID!
+  exerciseResponseId: ID
+  title: String!
+  content: String!
+  category: String!
+  insights: String
+  audioS3Keys: [String]
+  videoS3Keys: [String]
+  imageS3Keys: [String]
+  documentS3Keys: [String]
+  s3Bucket: String
+  mood: String
+  tags: [String]
+  isHighlight: Boolean
+  viewCount: Int
+  lastViewedAt: AWSDateTime
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  exerciseResponse: ExerciseResponse
+  mediaAssets(filter: ModelMediaAssetFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelMediaAssetConnection
+  id: ID!
+  owner: String
+}
+
+type UserInsights @aws_iam @aws_cognito_user_pools {
+  userId: ID!
+  overallMood: String
+  growthAreas: [String]
+  strengths: [String]
+  recommendations: [String]
+  progressMetrics: AWSJSON
+  lastUpdated: AWSDateTime
+  totalExercisesCompleted: Int
+  streakDays: Int
+  lastExerciseDate: AWSDateTime
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+  owner: String
+}
+
+type MediaAsset @aws_iam @aws_cognito_user_pools {
+  userId: ID!
+  s3Key: String!
+  s3Bucket: String!
+  fileName: String!
+  fileType: String!
+  fileSize: Int!
+  mimeType: String!
+  exerciseId: ID
+  exerciseResponseId: ID
+  playbookEntryId: ID
+  category: String
+  tags: [String]
+  description: String
+  uploadedAt: AWSDateTime!
+  lastAccessedAt: AWSDateTime
+  accessCount: Int
+  exercise: Exercise
+  exerciseResponse: ExerciseResponse
+  playbookEntry: PlaybookEntry
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+  owner: String
+}
+
+type UserSession @aws_iam @aws_cognito_user_pools {
+  userId: ID!
+  sessionType: UserSessionSessionType
+  startTime: AWSDateTime!
+  endTime: AWSDateTime
+  duration: Int
+  exerciseIds: [String]
+  mood: String
+  notes: String
+  completionStatus: UserSessionCompletionStatus
+  metadata: AWSJSON
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+  owner: String
+}
+
+type UserProgress @aws_iam @aws_cognito_user_pools {
+  userId: ID!
+  exerciseId: ID!
+  completionCount: Int
+  lastCompletedAt: AWSDateTime
+  averageCompletionTime: Int
+  averageMoodRating: Float
+  bestStreak: Int
+  currentStreak: Int
+  totalTimeSpent: Int
+  insights: [String]
+  exercise: Exercise
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+  owner: String
+}
+
+enum UserProfileRole {
+  user
+  admin
+}
+
+enum ExerciseCategory {
+  connection_to_nature
+  habit_formation
+  goal_resilience
+  substance_use
+  self_compassion
+  goal_attainment
+  worry
+  high_standard_friends
+  mindfulness_practice
+  sleep_and_rest
+  purpose
+  self_worth
+  emotional_re_appraisal
+  perfectionism
+  achievement_based_identity
+  self_auditing
+  purpose_based_identity
+  connection_and_belonging
+  tribe
+  purpose_beyond_self
+  diet_and_nutrition
+  goal_pursuit
+  self_talk
+  loving_relationships
+  gratitude
+  meaning
+  exercise
+  self_awareness
+  vulnerability
+  rumination
+  creative_expression
+  success_comparison
+  long_term_focus
+}
+
+enum ExerciseResponseStatus {
+  draft
+  completed
+}
+
+enum UserSessionSessionType {
+  exercise
+  reflection
+  goal_setting
+  review
+}
+
+enum UserSessionCompletionStatus {
+  started
+  completed
+  paused
+  abandoned
+}
+
+input AmplifyAIConversationTurnErrorInput {
+  errorType: String!
+  message: String!
+}
+
+input ModelStringInput {
+  ne: String
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+  contains: String
+  notContains: String
+  between: [String]
+  beginsWith: String
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  size: ModelSizeInput
+}
+
+input ModelIntInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelFloatInput {
+  ne: Float
+  eq: Float
+  le: Float
+  lt: Float
+  ge: Float
+  gt: Float
+  between: [Float]
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelBooleanInput {
+  ne: Boolean
+  eq: Boolean
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelIDInput {
+  ne: ID
+  eq: ID
+  le: ID
+  lt: ID
+  ge: ID
+  gt: ID
+  contains: ID
+  notContains: ID
+  between: [ID]
+  beginsWith: ID
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  size: ModelSizeInput
+}
+
+input ModelSubscriptionStringInput {
+  ne: String
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+  contains: String
+  notContains: String
+  between: [String]
+  beginsWith: String
+  in: [String]
+  notIn: [String]
+}
+
+input ModelSubscriptionIntInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+  in: [Int]
+  notIn: [Int]
+}
+
+input ModelSubscriptionFloatInput {
+  ne: Float
+  eq: Float
+  le: Float
+  lt: Float
+  ge: Float
+  gt: Float
+  between: [Float]
+  in: [Float]
+  notIn: [Float]
+}
+
+input ModelSubscriptionBooleanInput {
+  ne: Boolean
+  eq: Boolean
+}
+
+input ModelSubscriptionIDInput {
+  ne: ID
+  eq: ID
+  le: ID
+  lt: ID
+  ge: ID
+  gt: ID
+  contains: ID
+  notContains: ID
+  between: [ID]
+  beginsWith: ID
+  in: [ID]
+  notIn: [ID]
+}
+
+enum ModelAttributeTypes {
+  binary
+  binarySet
+  bool
+  list
+  map
+  number
+  numberSet
+  string
+  stringSet
+  _null
+}
+
+input ModelSizeInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+}
+
+enum ModelSortDirection {
+  ASC
+  DESC
+}
+
+type ModelUserProfileConnection @aws_iam @aws_cognito_user_pools {
+  items: [UserProfile]!
+  nextToken: String
+}
+
+input ModelUserProfileRoleInput {
+  eq: UserProfileRole
+  ne: UserProfileRole
+}
+
+input ModelUserProfileFilterInput {
+  userId: ModelIDInput
+  firstName: ModelStringInput
+  lastName: ModelStringInput
+  email: ModelStringInput
+  role: ModelUserProfileRoleInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  id: ModelIDInput
+  and: [ModelUserProfileFilterInput]
+  or: [ModelUserProfileFilterInput]
+  not: ModelUserProfileFilterInput
+  owner: ModelStringInput
+}
+
+type Query {
+  getUserProfile(id: ID!): UserProfile @aws_iam @aws_cognito_user_pools
+  listUserProfiles(filter: ModelUserProfileFilterInput, limit: Int, nextToken: String): ModelUserProfileConnection @aws_iam @aws_cognito_user_pools
+  getExercise(id: ID!): Exercise @aws_iam @aws_cognito_user_pools
+  listExercises(filter: ModelExerciseFilterInput, limit: Int, nextToken: String): ModelExerciseConnection @aws_iam @aws_cognito_user_pools
+  getExerciseResponse(id: ID!): ExerciseResponse @aws_iam @aws_cognito_user_pools
+  listExerciseResponses(filter: ModelExerciseResponseFilterInput, limit: Int, nextToken: String): ModelExerciseResponseConnection @aws_iam @aws_cognito_user_pools
+  getPlaybookEntry(id: ID!): PlaybookEntry @aws_iam @aws_cognito_user_pools
+  listPlaybookEntries(filter: ModelPlaybookEntryFilterInput, limit: Int, nextToken: String): ModelPlaybookEntryConnection @aws_iam @aws_cognito_user_pools
+  getUserInsights(id: ID!): UserInsights @aws_iam @aws_cognito_user_pools
+  listUserInsights(filter: ModelUserInsightsFilterInput, limit: Int, nextToken: String): ModelUserInsightsConnection @aws_iam @aws_cognito_user_pools
+  getMediaAsset(id: ID!): MediaAsset @aws_iam @aws_cognito_user_pools
+  listMediaAssets(filter: ModelMediaAssetFilterInput, limit: Int, nextToken: String): ModelMediaAssetConnection @aws_iam @aws_cognito_user_pools
+  getUserSession(id: ID!): UserSession @aws_iam @aws_cognito_user_pools
+  listUserSessions(filter: ModelUserSessionFilterInput, limit: Int, nextToken: String): ModelUserSessionConnection @aws_iam @aws_cognito_user_pools
+  getUserProgress(id: ID!): UserProgress @aws_iam @aws_cognito_user_pools
+  listUserProgresses(filter: ModelUserProgressFilterInput, limit: Int, nextToken: String): ModelUserProgressConnection @aws_iam @aws_cognito_user_pools
+}
+
+input ModelUserProfileConditionInput {
+  userId: ModelIDInput
+  firstName: ModelStringInput
+  lastName: ModelStringInput
+  email: ModelStringInput
+  role: ModelUserProfileRoleInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelUserProfileConditionInput]
+  or: [ModelUserProfileConditionInput]
+  not: ModelUserProfileConditionInput
+  owner: ModelStringInput
+}
+
+input CreateUserProfileInput {
+  userId: ID!
+  firstName: String!
+  lastName: String!
+  email: AWSEmail!
+  role: UserProfileRole
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  id: ID
+}
+
+input UpdateUserProfileInput {
+  userId: ID
+  firstName: String
+  lastName: String
+  email: AWSEmail
+  role: UserProfileRole
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  id: ID!
+}
+
+input DeleteUserProfileInput {
+  id: ID!
+}
+
+type Mutation {
+  createUserProfile(input: CreateUserProfileInput!, condition: ModelUserProfileConditionInput): UserProfile @aws_iam @aws_cognito_user_pools
+  updateUserProfile(input: UpdateUserProfileInput!, condition: ModelUserProfileConditionInput): UserProfile @aws_iam @aws_cognito_user_pools
+  deleteUserProfile(input: DeleteUserProfileInput!, condition: ModelUserProfileConditionInput): UserProfile @aws_iam @aws_cognito_user_pools
+  createExercise(input: CreateExerciseInput!, condition: ModelExerciseConditionInput): Exercise @aws_iam @aws_cognito_user_pools
+  updateExercise(input: UpdateExerciseInput!, condition: ModelExerciseConditionInput): Exercise @aws_iam @aws_cognito_user_pools
+  deleteExercise(input: DeleteExerciseInput!, condition: ModelExerciseConditionInput): Exercise @aws_iam @aws_cognito_user_pools
+  createExerciseResponse(input: CreateExerciseResponseInput!, condition: ModelExerciseResponseConditionInput): ExerciseResponse @aws_iam @aws_cognito_user_pools
+  updateExerciseResponse(input: UpdateExerciseResponseInput!, condition: ModelExerciseResponseConditionInput): ExerciseResponse @aws_iam @aws_cognito_user_pools
+  deleteExerciseResponse(input: DeleteExerciseResponseInput!, condition: ModelExerciseResponseConditionInput): ExerciseResponse @aws_iam @aws_cognito_user_pools
+  createPlaybookEntry(input: CreatePlaybookEntryInput!, condition: ModelPlaybookEntryConditionInput): PlaybookEntry @aws_iam @aws_cognito_user_pools
+  updatePlaybookEntry(input: UpdatePlaybookEntryInput!, condition: ModelPlaybookEntryConditionInput): PlaybookEntry @aws_iam @aws_cognito_user_pools
+  deletePlaybookEntry(input: DeletePlaybookEntryInput!, condition: ModelPlaybookEntryConditionInput): PlaybookEntry @aws_iam @aws_cognito_user_pools
+  createUserInsights(input: CreateUserInsightsInput!, condition: ModelUserInsightsConditionInput): UserInsights @aws_iam @aws_cognito_user_pools
+  updateUserInsights(input: UpdateUserInsightsInput!, condition: ModelUserInsightsConditionInput): UserInsights @aws_iam @aws_cognito_user_pools
+  deleteUserInsights(input: DeleteUserInsightsInput!, condition: ModelUserInsightsConditionInput): UserInsights @aws_iam @aws_cognito_user_pools
+  createMediaAsset(input: CreateMediaAssetInput!, condition: ModelMediaAssetConditionInput): MediaAsset @aws_iam @aws_cognito_user_pools
+  updateMediaAsset(input: UpdateMediaAssetInput!, condition: ModelMediaAssetConditionInput): MediaAsset @aws_iam @aws_cognito_user_pools
+  deleteMediaAsset(input: DeleteMediaAssetInput!, condition: ModelMediaAssetConditionInput): MediaAsset @aws_iam @aws_cognito_user_pools
+  createUserSession(input: CreateUserSessionInput!, condition: ModelUserSessionConditionInput): UserSession @aws_iam @aws_cognito_user_pools
+  updateUserSession(input: UpdateUserSessionInput!, condition: ModelUserSessionConditionInput): UserSession @aws_iam @aws_cognito_user_pools
+  deleteUserSession(input: DeleteUserSessionInput!, condition: ModelUserSessionConditionInput): UserSession @aws_iam @aws_cognito_user_pools
+  createUserProgress(input: CreateUserProgressInput!, condition: ModelUserProgressConditionInput): UserProgress @aws_iam @aws_cognito_user_pools
+  updateUserProgress(input: UpdateUserProgressInput!, condition: ModelUserProgressConditionInput): UserProgress @aws_iam @aws_cognito_user_pools
+  deleteUserProgress(input: DeleteUserProgressInput!, condition: ModelUserProgressConditionInput): UserProgress @aws_iam @aws_cognito_user_pools
+}
+
+input ModelSubscriptionUserProfileFilterInput {
+  userId: ModelSubscriptionIDInput
+  firstName: ModelSubscriptionStringInput
+  lastName: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  role: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  and: [ModelSubscriptionUserProfileFilterInput]
+  or: [ModelSubscriptionUserProfileFilterInput]
+  owner: ModelStringInput
+}
+
+type Subscription {
+  onCreateUserProfile(filter: ModelSubscriptionUserProfileFilterInput, owner: String): UserProfile @aws_subscribe(mutations: ["createUserProfile"]) @aws_iam @aws_cognito_user_pools
+  onUpdateUserProfile(filter: ModelSubscriptionUserProfileFilterInput, owner: String): UserProfile @aws_subscribe(mutations: ["updateUserProfile"]) @aws_iam @aws_cognito_user_pools
+  onDeleteUserProfile(filter: ModelSubscriptionUserProfileFilterInput, owner: String): UserProfile @aws_subscribe(mutations: ["deleteUserProfile"]) @aws_iam @aws_cognito_user_pools
+  onCreateExercise(filter: ModelSubscriptionExerciseFilterInput): Exercise @aws_subscribe(mutations: ["createExercise"]) @aws_iam @aws_cognito_user_pools
+  onUpdateExercise(filter: ModelSubscriptionExerciseFilterInput): Exercise @aws_subscribe(mutations: ["updateExercise"]) @aws_iam @aws_cognito_user_pools
+  onDeleteExercise(filter: ModelSubscriptionExerciseFilterInput): Exercise @aws_subscribe(mutations: ["deleteExercise"]) @aws_iam @aws_cognito_user_pools
+  onCreateExerciseResponse(filter: ModelSubscriptionExerciseResponseFilterInput, owner: String): ExerciseResponse @aws_subscribe(mutations: ["createExerciseResponse"]) @aws_iam @aws_cognito_user_pools
+  onUpdateExerciseResponse(filter: ModelSubscriptionExerciseResponseFilterInput, owner: String): ExerciseResponse @aws_subscribe(mutations: ["updateExerciseResponse"]) @aws_iam @aws_cognito_user_pools
+  onDeleteExerciseResponse(filter: ModelSubscriptionExerciseResponseFilterInput, owner: String): ExerciseResponse @aws_subscribe(mutations: ["deleteExerciseResponse"]) @aws_iam @aws_cognito_user_pools
+  onCreatePlaybookEntry(filter: ModelSubscriptionPlaybookEntryFilterInput, owner: String): PlaybookEntry @aws_subscribe(mutations: ["createPlaybookEntry"]) @aws_iam @aws_cognito_user_pools
+  onUpdatePlaybookEntry(filter: ModelSubscriptionPlaybookEntryFilterInput, owner: String): PlaybookEntry @aws_subscribe(mutations: ["updatePlaybookEntry"]) @aws_iam @aws_cognito_user_pools
+  onDeletePlaybookEntry(filter: ModelSubscriptionPlaybookEntryFilterInput, owner: String): PlaybookEntry @aws_subscribe(mutations: ["deletePlaybookEntry"]) @aws_iam @aws_cognito_user_pools
+  onCreateUserInsights(filter: ModelSubscriptionUserInsightsFilterInput, owner: String): UserInsights @aws_subscribe(mutations: ["createUserInsights"]) @aws_iam @aws_cognito_user_pools
+  onUpdateUserInsights(filter: ModelSubscriptionUserInsightsFilterInput, owner: String): UserInsights @aws_subscribe(mutations: ["updateUserInsights"]) @aws_iam @aws_cognito_user_pools
+  onDeleteUserInsights(filter: ModelSubscriptionUserInsightsFilterInput, owner: String): UserInsights @aws_subscribe(mutations: ["deleteUserInsights"]) @aws_iam @aws_cognito_user_pools
+  onCreateMediaAsset(filter: ModelSubscriptionMediaAssetFilterInput, owner: String): MediaAsset @aws_subscribe(mutations: ["createMediaAsset"]) @aws_iam @aws_cognito_user_pools
+  onUpdateMediaAsset(filter: ModelSubscriptionMediaAssetFilterInput, owner: String): MediaAsset @aws_subscribe(mutations: ["updateMediaAsset"]) @aws_iam @aws_cognito_user_pools
+  onDeleteMediaAsset(filter: ModelSubscriptionMediaAssetFilterInput, owner: String): MediaAsset @aws_subscribe(mutations: ["deleteMediaAsset"]) @aws_iam @aws_cognito_user_pools
+  onCreateUserSession(filter: ModelSubscriptionUserSessionFilterInput, owner: String): UserSession @aws_subscribe(mutations: ["createUserSession"]) @aws_iam @aws_cognito_user_pools
+  onUpdateUserSession(filter: ModelSubscriptionUserSessionFilterInput, owner: String): UserSession @aws_subscribe(mutations: ["updateUserSession"]) @aws_iam @aws_cognito_user_pools
+  onDeleteUserSession(filter: ModelSubscriptionUserSessionFilterInput, owner: String): UserSession @aws_subscribe(mutations: ["deleteUserSession"]) @aws_iam @aws_cognito_user_pools
+  onCreateUserProgress(filter: ModelSubscriptionUserProgressFilterInput, owner: String): UserProgress @aws_subscribe(mutations: ["createUserProgress"]) @aws_iam @aws_cognito_user_pools
+  onUpdateUserProgress(filter: ModelSubscriptionUserProgressFilterInput, owner: String): UserProgress @aws_subscribe(mutations: ["updateUserProgress"]) @aws_iam @aws_cognito_user_pools
+  onDeleteUserProgress(filter: ModelSubscriptionUserProgressFilterInput, owner: String): UserProgress @aws_subscribe(mutations: ["deleteUserProgress"]) @aws_iam @aws_cognito_user_pools
+}
+
+type ModelExerciseConnection @aws_iam @aws_cognito_user_pools {
+  items: [Exercise]!
+  nextToken: String
+}
+
+input ModelExerciseCategoryInput {
+  eq: ExerciseCategory
+  ne: ExerciseCategory
+}
+
+input ModelExerciseFilterInput {
+  title: ModelStringInput
+  description: ModelStringInput
+  category: ModelExerciseCategoryInput
+  question: ModelStringInput
+  instructions: ModelStringInput
+  requireText: ModelBooleanInput
+  requireImage: ModelBooleanInput
+  requireAudio: ModelBooleanInput
+  requireVideo: ModelBooleanInput
+  requireDocument: ModelBooleanInput
+  textPrompt: ModelStringInput
+  maxTextLength: ModelIntInput
+  allowMultipleImages: ModelBooleanInput
+  allowMultipleDocuments: ModelBooleanInput
+  allowEditingCompleted: ModelBooleanInput
+  isActive: ModelBooleanInput
+  order: ModelIntInput
+  createdAt: ModelStringInput
+  createdBy: ModelIDInput
+  id: ModelIDInput
+  updatedAt: ModelStringInput
+  and: [ModelExerciseFilterInput]
+  or: [ModelExerciseFilterInput]
+  not: ModelExerciseFilterInput
+}
+
+input ModelExerciseConditionInput {
+  title: ModelStringInput
+  description: ModelStringInput
+  category: ModelExerciseCategoryInput
+  question: ModelStringInput
+  instructions: ModelStringInput
+  requireText: ModelBooleanInput
+  requireImage: ModelBooleanInput
+  requireAudio: ModelBooleanInput
+  requireVideo: ModelBooleanInput
+  requireDocument: ModelBooleanInput
+  textPrompt: ModelStringInput
+  maxTextLength: ModelIntInput
+  allowMultipleImages: ModelBooleanInput
+  allowMultipleDocuments: ModelBooleanInput
+  allowEditingCompleted: ModelBooleanInput
+  isActive: ModelBooleanInput
+  order: ModelIntInput
+  createdAt: ModelStringInput
+  createdBy: ModelIDInput
+  and: [ModelExerciseConditionInput]
+  or: [ModelExerciseConditionInput]
+  not: ModelExerciseConditionInput
+  updatedAt: ModelStringInput
+}
+
+input CreateExerciseInput {
+  title: String!
+  description: String!
+  category: ExerciseCategory
+  question: String!
+  instructions: String
+  requireText: Boolean
+  requireImage: Boolean
+  requireAudio: Boolean
+  requireVideo: Boolean
+  requireDocument: Boolean
+  textPrompt: String
+  maxTextLength: Int
+  allowMultipleImages: Boolean
+  allowMultipleDocuments: Boolean
+  allowEditingCompleted: Boolean
+  isActive: Boolean
+  order: Int
+  createdAt: AWSDateTime
+  createdBy: ID
+  id: ID
+}
+
+input UpdateExerciseInput {
+  title: String
+  description: String
+  category: ExerciseCategory
+  question: String
+  instructions: String
+  requireText: Boolean
+  requireImage: Boolean
+  requireAudio: Boolean
+  requireVideo: Boolean
+  requireDocument: Boolean
+  textPrompt: String
+  maxTextLength: Int
+  allowMultipleImages: Boolean
+  allowMultipleDocuments: Boolean
+  allowEditingCompleted: Boolean
+  isActive: Boolean
+  order: Int
+  createdAt: AWSDateTime
+  createdBy: ID
+  id: ID!
+}
+
+input DeleteExerciseInput {
+  id: ID!
+}
+
+input ModelSubscriptionExerciseFilterInput {
+  title: ModelSubscriptionStringInput
+  description: ModelSubscriptionStringInput
+  category: ModelSubscriptionStringInput
+  question: ModelSubscriptionStringInput
+  instructions: ModelSubscriptionStringInput
+  requireText: ModelSubscriptionBooleanInput
+  requireImage: ModelSubscriptionBooleanInput
+  requireAudio: ModelSubscriptionBooleanInput
+  requireVideo: ModelSubscriptionBooleanInput
+  requireDocument: ModelSubscriptionBooleanInput
+  textPrompt: ModelSubscriptionStringInput
+  maxTextLength: ModelSubscriptionIntInput
+  allowMultipleImages: ModelSubscriptionBooleanInput
+  allowMultipleDocuments: ModelSubscriptionBooleanInput
+  allowEditingCompleted: ModelSubscriptionBooleanInput
+  isActive: ModelSubscriptionBooleanInput
+  order: ModelSubscriptionIntInput
+  createdAt: ModelSubscriptionStringInput
+  createdBy: ModelSubscriptionIDInput
+  id: ModelSubscriptionIDInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionExerciseFilterInput]
+  or: [ModelSubscriptionExerciseFilterInput]
+}
+
+type ModelExerciseResponseConnection @aws_iam @aws_cognito_user_pools {
+  items: [ExerciseResponse]!
+  nextToken: String
+}
+
+input ModelExerciseResponseStatusInput {
+  eq: ExerciseResponseStatus
+  ne: ExerciseResponseStatus
+}
+
+input ModelExerciseResponseFilterInput {
+  exerciseId: ModelIDInput
+  userId: ModelIDInput
+  responseText: ModelStringInput
+  audioS3Key: ModelStringInput
+  videoS3Key: ModelStringInput
+  videoS3Keys: ModelStringInput
+  imageS3Keys: ModelStringInput
+  documentS3Keys: ModelStringInput
+  notes: ModelStringInput
+  s3Bucket: ModelStringInput
+  status: ModelExerciseResponseStatusInput
+  completedAt: ModelStringInput
+  timeSpentSeconds: ModelIntInput
+  analysisResult: ModelStringInput
+  insights: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  id: ModelIDInput
+  and: [ModelExerciseResponseFilterInput]
+  or: [ModelExerciseResponseFilterInput]
+  not: ModelExerciseResponseFilterInput
+  owner: ModelStringInput
+}
+
+input ModelExerciseResponseConditionInput {
+  exerciseId: ModelIDInput
+  userId: ModelIDInput
+  responseText: ModelStringInput
+  audioS3Key: ModelStringInput
+  videoS3Key: ModelStringInput
+  videoS3Keys: ModelStringInput
+  imageS3Keys: ModelStringInput
+  documentS3Keys: ModelStringInput
+  notes: ModelStringInput
+  s3Bucket: ModelStringInput
+  status: ModelExerciseResponseStatusInput
+  completedAt: ModelStringInput
+  timeSpentSeconds: ModelIntInput
+  analysisResult: ModelStringInput
+  insights: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelExerciseResponseConditionInput]
+  or: [ModelExerciseResponseConditionInput]
+  not: ModelExerciseResponseConditionInput
+  owner: ModelStringInput
+}
+
+input CreateExerciseResponseInput {
+  exerciseId: ID!
+  userId: ID!
+  responseText: String
+  audioS3Key: String
+  videoS3Key: String
+  videoS3Keys: [String]
+  imageS3Keys: [String]
+  documentS3Keys: [String]
+  notes: String
+  s3Bucket: String
+  status: ExerciseResponseStatus
+  completedAt: AWSDateTime
+  timeSpentSeconds: Int
+  analysisResult: AWSJSON
+  insights: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  id: ID
+}
+
+input UpdateExerciseResponseInput {
+  exerciseId: ID
+  userId: ID
+  responseText: String
+  audioS3Key: String
+  videoS3Key: String
+  videoS3Keys: [String]
+  imageS3Keys: [String]
+  documentS3Keys: [String]
+  notes: String
+  s3Bucket: String
+  status: ExerciseResponseStatus
+  completedAt: AWSDateTime
+  timeSpentSeconds: Int
+  analysisResult: AWSJSON
+  insights: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  id: ID!
+}
+
+input DeleteExerciseResponseInput {
+  id: ID!
+}
+
+input ModelSubscriptionExerciseResponseFilterInput {
+  exerciseId: ModelSubscriptionIDInput
+  userId: ModelSubscriptionIDInput
+  responseText: ModelSubscriptionStringInput
+  audioS3Key: ModelSubscriptionStringInput
+  videoS3Key: ModelSubscriptionStringInput
+  videoS3Keys: ModelSubscriptionStringInput
+  imageS3Keys: ModelSubscriptionStringInput
+  documentS3Keys: ModelSubscriptionStringInput
+  notes: ModelSubscriptionStringInput
+  s3Bucket: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  completedAt: ModelSubscriptionStringInput
+  timeSpentSeconds: ModelSubscriptionIntInput
+  analysisResult: ModelSubscriptionStringInput
+  insights: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  and: [ModelSubscriptionExerciseResponseFilterInput]
+  or: [ModelSubscriptionExerciseResponseFilterInput]
+  owner: ModelStringInput
+}
+
+type ModelPlaybookEntryConnection @aws_iam @aws_cognito_user_pools {
+  items: [PlaybookEntry]!
+  nextToken: String
+}
+
+input ModelPlaybookEntryFilterInput {
+  userId: ModelIDInput
+  exerciseResponseId: ModelIDInput
+  title: ModelStringInput
+  content: ModelStringInput
+  category: ModelStringInput
+  insights: ModelStringInput
+  audioS3Keys: ModelStringInput
+  videoS3Keys: ModelStringInput
+  imageS3Keys: ModelStringInput
+  documentS3Keys: ModelStringInput
+  s3Bucket: ModelStringInput
+  mood: ModelStringInput
+  tags: ModelStringInput
+  isHighlight: ModelBooleanInput
+  viewCount: ModelIntInput
+  lastViewedAt: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  id: ModelIDInput
+  and: [ModelPlaybookEntryFilterInput]
+  or: [ModelPlaybookEntryFilterInput]
+  not: ModelPlaybookEntryFilterInput
+  owner: ModelStringInput
+}
+
+input ModelPlaybookEntryConditionInput {
+  userId: ModelIDInput
+  exerciseResponseId: ModelIDInput
+  title: ModelStringInput
+  content: ModelStringInput
+  category: ModelStringInput
+  insights: ModelStringInput
+  audioS3Keys: ModelStringInput
+  videoS3Keys: ModelStringInput
+  imageS3Keys: ModelStringInput
+  documentS3Keys: ModelStringInput
+  s3Bucket: ModelStringInput
+  mood: ModelStringInput
+  tags: ModelStringInput
+  isHighlight: ModelBooleanInput
+  viewCount: ModelIntInput
+  lastViewedAt: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelPlaybookEntryConditionInput]
+  or: [ModelPlaybookEntryConditionInput]
+  not: ModelPlaybookEntryConditionInput
+  owner: ModelStringInput
+}
+
+input CreatePlaybookEntryInput {
+  userId: ID!
+  exerciseResponseId: ID
+  title: String!
+  content: String!
+  category: String!
+  insights: String
+  audioS3Keys: [String]
+  videoS3Keys: [String]
+  imageS3Keys: [String]
+  documentS3Keys: [String]
+  s3Bucket: String
+  mood: String
+  tags: [String]
+  isHighlight: Boolean
+  viewCount: Int
+  lastViewedAt: AWSDateTime
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  id: ID
+}
+
+input UpdatePlaybookEntryInput {
+  userId: ID
+  exerciseResponseId: ID
+  title: String
+  content: String
+  category: String
+  insights: String
+  audioS3Keys: [String]
+  videoS3Keys: [String]
+  imageS3Keys: [String]
+  documentS3Keys: [String]
+  s3Bucket: String
+  mood: String
+  tags: [String]
+  isHighlight: Boolean
+  viewCount: Int
+  lastViewedAt: AWSDateTime
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  id: ID!
+}
+
+input DeletePlaybookEntryInput {
+  id: ID!
+}
+
+input ModelSubscriptionPlaybookEntryFilterInput {
+  userId: ModelSubscriptionIDInput
+  exerciseResponseId: ModelSubscriptionIDInput
+  title: ModelSubscriptionStringInput
+  content: ModelSubscriptionStringInput
+  category: ModelSubscriptionStringInput
+  insights: ModelSubscriptionStringInput
+  audioS3Keys: ModelSubscriptionStringInput
+  videoS3Keys: ModelSubscriptionStringInput
+  imageS3Keys: ModelSubscriptionStringInput
+  documentS3Keys: ModelSubscriptionStringInput
+  s3Bucket: ModelSubscriptionStringInput
+  mood: ModelSubscriptionStringInput
+  tags: ModelSubscriptionStringInput
+  isHighlight: ModelSubscriptionBooleanInput
+  viewCount: ModelSubscriptionIntInput
+  lastViewedAt: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  and: [ModelSubscriptionPlaybookEntryFilterInput]
+  or: [ModelSubscriptionPlaybookEntryFilterInput]
+  owner: ModelStringInput
+}
+
+type ModelUserInsightsConnection @aws_iam @aws_cognito_user_pools {
+  items: [UserInsights]!
+  nextToken: String
+}
+
+input ModelUserInsightsFilterInput {
+  userId: ModelIDInput
+  overallMood: ModelStringInput
+  growthAreas: ModelStringInput
+  strengths: ModelStringInput
+  recommendations: ModelStringInput
+  progressMetrics: ModelStringInput
+  lastUpdated: ModelStringInput
+  totalExercisesCompleted: ModelIntInput
+  streakDays: ModelIntInput
+  lastExerciseDate: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelUserInsightsFilterInput]
+  or: [ModelUserInsightsFilterInput]
+  not: ModelUserInsightsFilterInput
+  owner: ModelStringInput
+}
+
+input ModelUserInsightsConditionInput {
+  userId: ModelIDInput
+  overallMood: ModelStringInput
+  growthAreas: ModelStringInput
+  strengths: ModelStringInput
+  recommendations: ModelStringInput
+  progressMetrics: ModelStringInput
+  lastUpdated: ModelStringInput
+  totalExercisesCompleted: ModelIntInput
+  streakDays: ModelIntInput
+  lastExerciseDate: ModelStringInput
+  and: [ModelUserInsightsConditionInput]
+  or: [ModelUserInsightsConditionInput]
+  not: ModelUserInsightsConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  owner: ModelStringInput
+}
+
+input CreateUserInsightsInput {
+  userId: ID!
+  overallMood: String
+  growthAreas: [String]
+  strengths: [String]
+  recommendations: [String]
+  progressMetrics: AWSJSON
+  lastUpdated: AWSDateTime
+  totalExercisesCompleted: Int
+  streakDays: Int
+  lastExerciseDate: AWSDateTime
+  id: ID
+}
+
+input UpdateUserInsightsInput {
+  userId: ID
+  overallMood: String
+  growthAreas: [String]
+  strengths: [String]
+  recommendations: [String]
+  progressMetrics: AWSJSON
+  lastUpdated: AWSDateTime
+  totalExercisesCompleted: Int
+  streakDays: Int
+  lastExerciseDate: AWSDateTime
+  id: ID!
+}
+
+input DeleteUserInsightsInput {
+  id: ID!
+}
+
+input ModelSubscriptionUserInsightsFilterInput {
+  userId: ModelSubscriptionIDInput
+  overallMood: ModelSubscriptionStringInput
+  growthAreas: ModelSubscriptionStringInput
+  strengths: ModelSubscriptionStringInput
+  recommendations: ModelSubscriptionStringInput
+  progressMetrics: ModelSubscriptionStringInput
+  lastUpdated: ModelSubscriptionStringInput
+  totalExercisesCompleted: ModelSubscriptionIntInput
+  streakDays: ModelSubscriptionIntInput
+  lastExerciseDate: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionUserInsightsFilterInput]
+  or: [ModelSubscriptionUserInsightsFilterInput]
+  owner: ModelStringInput
+}
+
+type ModelMediaAssetConnection @aws_iam @aws_cognito_user_pools {
+  items: [MediaAsset]!
+  nextToken: String
+}
+
+input ModelMediaAssetFilterInput {
+  userId: ModelIDInput
+  s3Key: ModelStringInput
+  s3Bucket: ModelStringInput
+  fileName: ModelStringInput
+  fileType: ModelStringInput
+  fileSize: ModelIntInput
+  mimeType: ModelStringInput
+  exerciseId: ModelIDInput
+  exerciseResponseId: ModelIDInput
+  playbookEntryId: ModelIDInput
+  category: ModelStringInput
+  tags: ModelStringInput
+  description: ModelStringInput
+  uploadedAt: ModelStringInput
+  lastAccessedAt: ModelStringInput
+  accessCount: ModelIntInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelMediaAssetFilterInput]
+  or: [ModelMediaAssetFilterInput]
+  not: ModelMediaAssetFilterInput
+  owner: ModelStringInput
+}
+
+input ModelMediaAssetConditionInput {
+  userId: ModelIDInput
+  s3Key: ModelStringInput
+  s3Bucket: ModelStringInput
+  fileName: ModelStringInput
+  fileType: ModelStringInput
+  fileSize: ModelIntInput
+  mimeType: ModelStringInput
+  exerciseId: ModelIDInput
+  exerciseResponseId: ModelIDInput
+  playbookEntryId: ModelIDInput
+  category: ModelStringInput
+  tags: ModelStringInput
+  description: ModelStringInput
+  uploadedAt: ModelStringInput
+  lastAccessedAt: ModelStringInput
+  accessCount: ModelIntInput
+  and: [ModelMediaAssetConditionInput]
+  or: [ModelMediaAssetConditionInput]
+  not: ModelMediaAssetConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  owner: ModelStringInput
+}
+
+input CreateMediaAssetInput {
+  userId: ID!
+  s3Key: String!
+  s3Bucket: String!
+  fileName: String!
+  fileType: String!
+  fileSize: Int!
+  mimeType: String!
+  exerciseId: ID
+  exerciseResponseId: ID
+  playbookEntryId: ID
+  category: String
+  tags: [String]
+  description: String
+  uploadedAt: AWSDateTime!
+  lastAccessedAt: AWSDateTime
+  accessCount: Int
+  id: ID
+}
+
+input UpdateMediaAssetInput {
+  userId: ID
+  s3Key: String
+  s3Bucket: String
+  fileName: String
+  fileType: String
+  fileSize: Int
+  mimeType: String
+  exerciseId: ID
+  exerciseResponseId: ID
+  playbookEntryId: ID
+  category: String
+  tags: [String]
+  description: String
+  uploadedAt: AWSDateTime
+  lastAccessedAt: AWSDateTime
+  accessCount: Int
+  id: ID!
+}
+
+input DeleteMediaAssetInput {
+  id: ID!
+}
+
+input ModelSubscriptionMediaAssetFilterInput {
+  userId: ModelSubscriptionIDInput
+  s3Key: ModelSubscriptionStringInput
+  s3Bucket: ModelSubscriptionStringInput
+  fileName: ModelSubscriptionStringInput
+  fileType: ModelSubscriptionStringInput
+  fileSize: ModelSubscriptionIntInput
+  mimeType: ModelSubscriptionStringInput
+  exerciseId: ModelSubscriptionIDInput
+  exerciseResponseId: ModelSubscriptionIDInput
+  playbookEntryId: ModelSubscriptionIDInput
+  category: ModelSubscriptionStringInput
+  tags: ModelSubscriptionStringInput
+  description: ModelSubscriptionStringInput
+  uploadedAt: ModelSubscriptionStringInput
+  lastAccessedAt: ModelSubscriptionStringInput
+  accessCount: ModelSubscriptionIntInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionMediaAssetFilterInput]
+  or: [ModelSubscriptionMediaAssetFilterInput]
+  owner: ModelStringInput
+}
+
+type ModelUserSessionConnection @aws_iam @aws_cognito_user_pools {
+  items: [UserSession]!
+  nextToken: String
+}
+
+input ModelUserSessionSessionTypeInput {
+  eq: UserSessionSessionType
+  ne: UserSessionSessionType
+}
+
+input ModelUserSessionCompletionStatusInput {
+  eq: UserSessionCompletionStatus
+  ne: UserSessionCompletionStatus
+}
+
+input ModelUserSessionFilterInput {
+  userId: ModelIDInput
+  sessionType: ModelUserSessionSessionTypeInput
+  startTime: ModelStringInput
+  endTime: ModelStringInput
+  duration: ModelIntInput
+  exerciseIds: ModelStringInput
+  mood: ModelStringInput
+  notes: ModelStringInput
+  completionStatus: ModelUserSessionCompletionStatusInput
+  metadata: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelUserSessionFilterInput]
+  or: [ModelUserSessionFilterInput]
+  not: ModelUserSessionFilterInput
+  owner: ModelStringInput
+}
+
+input ModelUserSessionConditionInput {
+  userId: ModelIDInput
+  sessionType: ModelUserSessionSessionTypeInput
+  startTime: ModelStringInput
+  endTime: ModelStringInput
+  duration: ModelIntInput
+  exerciseIds: ModelStringInput
+  mood: ModelStringInput
+  notes: ModelStringInput
+  completionStatus: ModelUserSessionCompletionStatusInput
+  metadata: ModelStringInput
+  and: [ModelUserSessionConditionInput]
+  or: [ModelUserSessionConditionInput]
+  not: ModelUserSessionConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  owner: ModelStringInput
+}
+
+input CreateUserSessionInput {
+  userId: ID!
+  sessionType: UserSessionSessionType
+  startTime: AWSDateTime!
+  endTime: AWSDateTime
+  duration: Int
+  exerciseIds: [String]
+  mood: String
+  notes: String
+  completionStatus: UserSessionCompletionStatus
+  metadata: AWSJSON
+  id: ID
+}
+
+input UpdateUserSessionInput {
+  userId: ID
+  sessionType: UserSessionSessionType
+  startTime: AWSDateTime
+  endTime: AWSDateTime
+  duration: Int
+  exerciseIds: [String]
+  mood: String
+  notes: String
+  completionStatus: UserSessionCompletionStatus
+  metadata: AWSJSON
+  id: ID!
+}
+
+input DeleteUserSessionInput {
+  id: ID!
+}
+
+input ModelSubscriptionUserSessionFilterInput {
+  userId: ModelSubscriptionIDInput
+  sessionType: ModelSubscriptionStringInput
+  startTime: ModelSubscriptionStringInput
+  endTime: ModelSubscriptionStringInput
+  duration: ModelSubscriptionIntInput
+  exerciseIds: ModelSubscriptionStringInput
+  mood: ModelSubscriptionStringInput
+  notes: ModelSubscriptionStringInput
+  completionStatus: ModelSubscriptionStringInput
+  metadata: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionUserSessionFilterInput]
+  or: [ModelSubscriptionUserSessionFilterInput]
+  owner: ModelStringInput
+}
+
+type ModelUserProgressConnection @aws_iam @aws_cognito_user_pools {
+  items: [UserProgress]!
+  nextToken: String
+}
+
+input ModelUserProgressFilterInput {
+  userId: ModelIDInput
+  exerciseId: ModelIDInput
+  completionCount: ModelIntInput
+  lastCompletedAt: ModelStringInput
+  averageCompletionTime: ModelIntInput
+  averageMoodRating: ModelFloatInput
+  bestStreak: ModelIntInput
+  currentStreak: ModelIntInput
+  totalTimeSpent: ModelIntInput
+  insights: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelUserProgressFilterInput]
+  or: [ModelUserProgressFilterInput]
+  not: ModelUserProgressFilterInput
+  owner: ModelStringInput
+}
+
+input ModelUserProgressConditionInput {
+  userId: ModelIDInput
+  exerciseId: ModelIDInput
+  completionCount: ModelIntInput
+  lastCompletedAt: ModelStringInput
+  averageCompletionTime: ModelIntInput
+  averageMoodRating: ModelFloatInput
+  bestStreak: ModelIntInput
+  currentStreak: ModelIntInput
+  totalTimeSpent: ModelIntInput
+  insights: ModelStringInput
+  and: [ModelUserProgressConditionInput]
+  or: [ModelUserProgressConditionInput]
+  not: ModelUserProgressConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  owner: ModelStringInput
+}
+
+input CreateUserProgressInput {
+  userId: ID!
+  exerciseId: ID!
+  completionCount: Int
+  lastCompletedAt: AWSDateTime
+  averageCompletionTime: Int
+  averageMoodRating: Float
+  bestStreak: Int
+  currentStreak: Int
+  totalTimeSpent: Int
+  insights: [String]
+  id: ID
+}
+
+input UpdateUserProgressInput {
+  userId: ID
+  exerciseId: ID
+  completionCount: Int
+  lastCompletedAt: AWSDateTime
+  averageCompletionTime: Int
+  averageMoodRating: Float
+  bestStreak: Int
+  currentStreak: Int
+  totalTimeSpent: Int
+  insights: [String]
+  id: ID!
+}
+
+input DeleteUserProgressInput {
+  id: ID!
+}
+
+input ModelSubscriptionUserProgressFilterInput {
+  userId: ModelSubscriptionIDInput
+  exerciseId: ModelSubscriptionIDInput
+  completionCount: ModelSubscriptionIntInput
+  lastCompletedAt: ModelSubscriptionStringInput
+  averageCompletionTime: ModelSubscriptionIntInput
+  averageMoodRating: ModelSubscriptionFloatInput
+  bestStreak: ModelSubscriptionIntInput
+  currentStreak: ModelSubscriptionIntInput
+  totalTimeSpent: ModelSubscriptionIntInput
+  insights: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionUserProgressFilterInput]
+  or: [ModelSubscriptionUserProgressFilterInput]
+  owner: ModelStringInput
+}

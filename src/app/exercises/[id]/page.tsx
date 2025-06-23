@@ -120,13 +120,91 @@ export default function ExerciseDetailPage() {
     }
   };
 
+  const getCategoryDisplayName = (category: string) => {
+    const displayNames: Record<string, string> = {
+      achievement_based_identity: 'Achievement-based identity',
+      connection_and_belonging: 'Connection & Belonging',
+      connection_to_nature: 'Connection to Nature',
+      creative_expression: 'Creative Expression',
+      diet_and_nutrition: 'Diet & Nutrition',
+      emotional_re_appraisal: 'Emotional Re-Appraisal',
+      exercise: 'Exercise',
+      goal_attainment: 'Goal Attainment',
+      goal_pursuit: 'Goal Pursuit',
+      goal_resilience: 'Goal Resilience',
+      gratitude: 'Gratitude',
+      habit_formation: 'Habit Formation',
+      high_standard_friends: 'High-Standard Friends',
+      long_term_focus: 'Long-Term Focus',
+      loving_relationships: 'Loving Relationships',
+      meaning: 'Meaning',
+      mindfulness_practice: 'Mindfulness Practice',
+      perfectionism: 'Perfectionism',
+      purpose: 'Purpose',
+      purpose_based_identity: 'Purpose-based identity',
+      purpose_beyond_self: 'Purpose Beyond Self',
+      rumination: 'Rumination',
+      self_auditing: 'Self-Auditing',
+      self_awareness: 'Self-Awareness',
+      self_compassion: 'Self-Compassion',
+      self_talk: 'Self-Talk',
+      self_worth: 'Self-Worth',
+      sleep_and_rest: 'Sleep and Rest',
+      substance_use: 'Substance Use',
+      success_comparison: 'Success Comparison',
+      tribe: 'Tribe',
+      vulnerability: 'Vulnerability',
+      worry: 'Worry',
+      // Legacy categories for backward compatibility
+      mindset: 'Mindset',
+      motivation: 'Motivation',
+      goals: 'Goals',
+      reflection: 'Reflection',
+      vision: 'Vision',
+    };
+    return displayNames[category] || category;
+  };
+
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
+      connection_to_nature: 'bg-green-100 text-green-800',
+      habit_formation: 'bg-blue-100 text-blue-800',
+      goal_resilience: 'bg-purple-100 text-purple-800',
+      substance_use: 'bg-red-100 text-red-800',
+      self_compassion: 'bg-pink-100 text-pink-800',
+      goal_attainment: 'bg-emerald-100 text-emerald-800',
+      worry: 'bg-orange-100 text-orange-800',
+      high_standard_friends: 'bg-cyan-100 text-cyan-800',
+      mindfulness_practice: 'bg-indigo-100 text-indigo-800',
+      sleep_and_rest: 'bg-slate-100 text-slate-800',
+      purpose: 'bg-violet-100 text-violet-800',
+      self_worth: 'bg-amber-100 text-amber-800',
+      emotional_re_appraisal: 'bg-teal-100 text-teal-800',
+      perfectionism: 'bg-rose-100 text-rose-800',
+      achievement_based_identity: 'bg-lime-100 text-lime-800',
+      self_auditing: 'bg-sky-100 text-sky-800',
+      purpose_based_identity: 'bg-fuchsia-100 text-fuchsia-800',
+      connection_and_belonging: 'bg-blue-100 text-blue-800',
+      tribe: 'bg-green-100 text-green-800',
+      purpose_beyond_self: 'bg-purple-100 text-purple-800',
+      diet_and_nutrition: 'bg-yellow-100 text-yellow-800',
+      goal_pursuit: 'bg-blue-100 text-blue-800',
+      self_talk: 'bg-pink-100 text-pink-800',
+      loving_relationships: 'bg-red-100 text-red-800',
+      gratitude: 'bg-pink-100 text-pink-800',
+      meaning: 'bg-indigo-100 text-indigo-800',
+      exercise: 'bg-green-100 text-green-800',
+      self_awareness: 'bg-yellow-100 text-yellow-800',
+      vulnerability: 'bg-purple-100 text-purple-800',
+      rumination: 'bg-gray-100 text-gray-800',
+      creative_expression: 'bg-pink-100 text-pink-800',
+      success_comparison: 'bg-orange-100 text-orange-800',
+      long_term_focus: 'bg-blue-100 text-blue-800',
+      // Legacy categories for backward compatibility
       mindset: 'bg-purple-100 text-purple-800',
       motivation: 'bg-blue-100 text-blue-800',
       goals: 'bg-green-100 text-green-800',
       reflection: 'bg-yellow-100 text-yellow-800',
-      gratitude: 'bg-pink-100 text-pink-800',
       vision: 'bg-indigo-100 text-indigo-800',
     };
     return colors[category] || 'bg-gray-100 text-gray-800';
@@ -191,7 +269,7 @@ export default function ExerciseDetailPage() {
                   <h1 className="text-3xl font-bold text-gray-900">{exercise.title}</h1>
                   <div className="flex items-center space-x-3 mt-2">
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(exercise.category)}`}>
-                      {exercise.category}
+                      {getCategoryDisplayName(exercise.category)}
                     </span>
                     <span className={`px-3 py-1 rounded-full text-sm ${exercise.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                       {exercise.isActive ? 'Active' : 'Inactive'}
@@ -248,9 +326,10 @@ export default function ExerciseDetailPage() {
             {/* Question */}
             <div>
               <h2 className="text-xl font-semibold text-gray-900 mb-3">Exercise Question</h2>
-              <p className="text-lg text-gray-700 bg-gray-50 p-4 rounded-md">
-                {exercise.question}
-              </p>
+              <div 
+                className="text-lg text-gray-700 bg-gray-50 p-4 rounded-md prose max-w-none rich-text-content"
+                dangerouslySetInnerHTML={{ __html: exercise.question }}
+              />
             </div>
 
             {/* Instructions */}
@@ -258,9 +337,10 @@ export default function ExerciseDetailPage() {
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-3">Instructions</h2>
                 <div className="bg-blue-50 p-4 rounded-md">
-                  <p className="text-blue-800 whitespace-pre-wrap">
-                    {exercise.instructions}
-                  </p>
+                  <div 
+                    className="text-blue-800 prose max-w-none rich-text-content"
+                    dangerouslySetInnerHTML={{ __html: exercise.instructions }}
+                  />
                 </div>
               </div>
             )}
@@ -269,11 +349,10 @@ export default function ExerciseDetailPage() {
             {exercise.description && (
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-3">Description & Narrative</h2>
-                <div className="prose max-w-none">
-                  <p className="text-gray-700 whitespace-pre-wrap">
-                    {exercise.description}
-                  </p>
-                </div>
+                <div 
+                  className="prose max-w-none text-gray-700 rich-text-content"
+                  dangerouslySetInnerHTML={{ __html: exercise.description }}
+                />
               </div>
             )}
 

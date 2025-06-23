@@ -105,50 +105,50 @@ export default function MyResponsesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Exercise Responses</h1>
-          <p className="text-gray-600 mt-2">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Exercise Responses</h1>
+          <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">
             View and manage your personal exercise responses and reflections
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-red-800">{error}</p>
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-red-800 text-sm sm:text-base">{error}</p>
           </div>
         )}
 
         {/* Responses List */}
         {isLoading ? (
-          <div className="bg-white rounded-lg shadow p-6 text-center">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-gray-600 mt-2">Loading your responses...</p>
+            <p className="text-gray-600 mt-2 text-sm sm:text-base">Loading your responses...</p>
           </div>
         ) : responses.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">📝</div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No responses yet</h3>
-            <p className="text-gray-600 mb-6">Start completing exercises to see your responses here</p>
+          <div className="text-center py-8 sm:py-12">
+            <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">📝</div>
+            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No responses yet</h3>
+            <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">Start completing exercises to see your responses here</p>
             <Link
               href="/exercises"
-              className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium transition-colors touch-manipulation"
             >
               Browse Exercises
             </Link>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {responses.map((response) => (
-              <div key={response.id} className="bg-white rounded-lg shadow-md p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900">
+              <div key={response.id} className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+                <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:items-start sm:space-y-0 mb-4">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 break-words">
                       {response.exercise?.title || 'Unknown Exercise'}
                     </h3>
-                    <div className="flex items-center space-x-4 mt-2">
+                    <div className="flex flex-wrap items-center gap-2 mt-2">
                       {response.exercise?.category && (
                         <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                           {response.exercise.category}
@@ -166,41 +166,49 @@ export default function MyResponsesPage() {
                       )}
                     </div>
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-gray-500 flex-shrink-0">
                     {new Date(response.updatedAt).toLocaleDateString()}
                   </div>
                 </div>
 
-                {/* Response Content */}
+                {/* Response Content - Fixed HTML Rendering */}
                 {response.responseText && (
                   <div className="mb-4">
-                    <h4 className="font-medium text-gray-900 mb-2">Your Response:</h4>
-                    <p className="text-gray-700 bg-gray-50 p-3 rounded-md">
-                      {response.responseText.length > 200 
-                        ? `${response.responseText.substring(0, 200)}...` 
-                        : response.responseText
-                      }
-                    </p>
+                    <h4 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">Your Response:</h4>
+                    <div className="text-gray-700 bg-gray-50 p-3 rounded-md prose prose-sm max-w-none">
+                      <div 
+                        className="rich-text-content"
+                        dangerouslySetInnerHTML={{ 
+                          __html: response.responseText.length > 200 
+                            ? `${response.responseText.substring(0, 200)}...` 
+                            : response.responseText
+                        }}
+                      />
+                    </div>
                   </div>
                 )}
 
-                {/* Insights */}
+                {/* Insights - Fixed HTML Rendering */}
                 {response.insights && (
                   <div className="mb-4">
-                    <h4 className="font-medium text-gray-900 mb-2">Personal Insights:</h4>
-                    <p className="text-gray-700 bg-blue-50 p-3 rounded-md">
-                      {response.insights.length > 150 
-                        ? `${response.insights.substring(0, 150)}...` 
-                        : response.insights
-                      }
-                    </p>
+                    <h4 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">Personal Insights:</h4>
+                    <div className="text-gray-700 bg-blue-50 p-3 rounded-md prose prose-sm max-w-none">
+                      <div 
+                        className="rich-text-content"
+                        dangerouslySetInnerHTML={{ 
+                          __html: response.insights.length > 150 
+                            ? `${response.insights.substring(0, 150)}...` 
+                            : response.insights
+                        }}
+                      />
+                    </div>
                   </div>
                 )}
 
                 {/* Tags */}
                 {response.tags && response.tags.length > 0 && (
                   <div className="mb-4">
-                    <h4 className="font-medium text-gray-900 mb-2">Tags:</h4>
+                    <h4 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">Tags:</h4>
                     <div className="flex flex-wrap gap-2">
                       {response.tags.map((tag, index) => (
                         <span
@@ -215,24 +223,24 @@ export default function MyResponsesPage() {
                 )}
 
                 {/* Actions */}
-                <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-                  <div className="flex space-x-4">
+                <div className="flex flex-col space-y-2 sm:flex-row sm:justify-between sm:items-center sm:space-y-0 pt-4 border-t border-gray-200">
+                  <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-4">
                     <Link
                       href={`/exercises/${response.exerciseId}/response/${response.id}`}
-                      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                      className="text-blue-600 hover:text-blue-800 text-sm font-medium text-center sm:text-left touch-manipulation"
                     >
                       View Full Response
                     </Link>
                     <Link
                       href={`/exercises/${response.exerciseId}/response/${response.id}/edit`}
-                      className="text-green-600 hover:text-green-800 text-sm font-medium"
+                      className="text-green-600 hover:text-green-800 text-sm font-medium text-center sm:text-left touch-manipulation"
                     >
                       Edit Response
                     </Link>
                   </div>
                   <button
                     onClick={() => deleteResponse(response.id)}
-                    className="text-red-600 hover:text-red-800 text-sm font-medium"
+                    className="text-red-600 hover:text-red-800 text-sm font-medium touch-manipulation"
                   >
                     Delete
                   </button>

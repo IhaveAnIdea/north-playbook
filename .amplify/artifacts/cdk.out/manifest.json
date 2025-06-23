@@ -1,5 +1,5 @@
 {
-  "version": "41.0.0",
+  "version": "44.0.0",
   "artifacts": {
     "amplify-northplaybook-actwr-sandbox-b72e1d22f0.assets": {
       "type": "cdk:asset-manifest",
@@ -22,7 +22,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/0f08ea20f823770a4a665d759a38d9d33c9cfb092fa2b59c644f69d269b97d80.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/206179ba38f7f64a8fc591a67671f8192469d50f1298f66c83652d8d482dc58e.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -5575,5 +5575,5 @@
       }
     }
   },
-  "minimumCliVersion": "2.1005.0"
+  "minimumCliVersion": "2.1019.1"
 }

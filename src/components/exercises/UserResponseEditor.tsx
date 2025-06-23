@@ -169,10 +169,16 @@ export default function UserResponseEditor({ exerciseId, responseId, onSave, onC
       {/* Exercise Context */}
       <div className="mb-8 p-6 bg-blue-50 rounded-lg">
         <h2 className="text-xl font-semibold text-blue-900 mb-3">{exercise.title}</h2>
-        <p className="text-blue-800 mb-4">{exercise.description}</p>
+        <div 
+          className="text-blue-800 mb-4 prose max-w-none"
+          dangerouslySetInnerHTML={{ __html: exercise.description }}
+        />
         <div className="p-4 bg-blue-100 rounded-md">
           <h3 className="font-medium text-blue-900 mb-2">Question:</h3>
-          <p className="text-blue-800 text-lg">{exercise.question}</p>
+          <div 
+            className="text-blue-800 text-lg prose max-w-none"
+            dangerouslySetInnerHTML={{ __html: exercise.question }}
+          />
         </div>
       </div>
 

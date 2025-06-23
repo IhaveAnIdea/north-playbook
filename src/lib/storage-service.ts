@@ -45,12 +45,39 @@ export const FILE_TYPES = {
 
 // Exercise categories for metadata
 export const EXERCISE_CATEGORIES = {
-  MINDSET: 'mindset',
-  MOTIVATION: 'motivation',
-  GOALS: 'goals',
-  REFLECTION: 'reflection',
+  CONNECTION_TO_NATURE: 'connection_to_nature',
+  HABIT_FORMATION: 'habit_formation',
+  GOAL_RESILIENCE: 'goal_resilience',
+  SUBSTANCE_USE: 'substance_use',
+  SELF_COMPASSION: 'self_compassion',
+  GOAL_ATTAINMENT: 'goal_attainment',
+  WORRY: 'worry',
+  HIGH_STANDARD_FRIENDS: 'high_standard_friends',
+  MINDFULNESS_PRACTICE: 'mindfulness_practice',
+  SLEEP_AND_REST: 'sleep_and_rest',
+  PURPOSE: 'purpose',
+  SELF_WORTH: 'self_worth',
+  EMOTIONAL_RE_APPRAISAL: 'emotional_re_appraisal',
+  PERFECTIONISM: 'perfectionism',
+  ACHIEVEMENT_BASED_IDENTITY: 'achievement_based_identity',
+  SELF_AUDITING: 'self_auditing',
+  PURPOSE_BASED_IDENTITY: 'purpose_based_identity',
+  CONNECTION_AND_BELONGING: 'connection_and_belonging',
+  TRIBE: 'tribe',
+  PURPOSE_BEYOND_SELF: 'purpose_beyond_self',
+  DIET_AND_NUTRITION: 'diet_and_nutrition',
+  GOAL_PURSUIT: 'goal_pursuit',
+  SELF_TALK: 'self_talk',
+  LOVING_RELATIONSHIPS: 'loving_relationships',
   GRATITUDE: 'gratitude',
-  VISION: 'vision'
+  MEANING: 'meaning',
+  EXERCISE: 'exercise',
+  SELF_AWARENESS: 'self_awareness',
+  VULNERABILITY: 'vulnerability',
+  RUMINATION: 'rumination',
+  CREATIVE_EXPRESSION: 'creative_expression',
+  SUCCESS_COMPARISON: 'success_comparison',
+  LONG_TERM_FOCUS: 'long_term_focus'
 } as const;
 
 export interface StorageMetadata {

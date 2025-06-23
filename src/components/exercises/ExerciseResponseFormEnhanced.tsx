@@ -702,19 +702,34 @@ export default function ExerciseResponseFormEnhanced({
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">{exercise.title}</h1>
-        <p className="text-gray-600 mt-2">{exercise.description}</p>
-        {exercise.instructions && (
-          <div className="mt-4 p-4 bg-blue-50 rounded-md">
-            <h3 className="font-medium text-blue-900 mb-2">Instructions</h3>
-            <p className="text-blue-800">{exercise.instructions}</p>
-          </div>
-        )}
+        <div 
+          className="text-gray-600 mt-2 prose max-w-none rich-text-content"
+          dangerouslySetInnerHTML={{ __html: exercise.description }}
+        />
       </div>
 
       {/* Question */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-3">{exercise.question}</h2>
+        <div 
+          className="text-xl font-semibold text-gray-900 mb-3 prose prose-lg max-w-none rich-text-content"
+          dangerouslySetInnerHTML={{ __html: exercise.question }}
+        />
       </div>
+
+      {/* Instructions (after question) */}
+      {exercise.instructions && (
+        <div className="mb-6 p-4 bg-blue-50 rounded-md">
+          <h3 className="font-medium text-blue-900 mb-2">Instructions</h3>
+          <div 
+            className="text-blue-800 rich-text-content"
+            style={{
+              wordWrap: 'break-word',
+              lineHeight: '1.6'
+            }}
+            dangerouslySetInnerHTML={{ __html: exercise.instructions }}
+          />
+        </div>
+      )}
 
       {/* Progress Tracker */}
       <div className="mb-6 p-4 bg-gray-50 rounded-lg">

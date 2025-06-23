@@ -2108,7 +2108,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WOwW6DMAyGn6X34NF2h+24gnbcJti9MompUsBBsdOqQrz7BJ067fT7kz/Z/w62ry+Qb/AqmXVd1vsGpg8SJVcr2s4ULX9hxIGU4gJFYOfVBzYVSUjRkimSaBj+sOXHjFc5Tu7GOATXwDc2PR1QyHgcYKpCf7dDT7PBcZQbW5jKVS+bEhXrx8n/9J7YLiWKwK0/pYhro9/P/YXibGR/RBFSgbcljOzhkGxHuhSYF/cz6ZjUrOta8eT5NBsOjuAsT5ddDttnyDdn8T6LidUPBNU9fwCZ1D9WNgEAAA=="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WOQW6DQAxFz5L9xKWkF2hAXaYVdB+ZGYMmgAeNPYkixN0rSJWqq+8nP9k/hzzLIdvhTfbW9fvBNzCfSJRcrWh7U7T8hRFHUoorFIGdVx/YVCQhRUumSKJh/MOWnzPe5Dy7O+MYXAPf2Ax0RCHjcYS5CsPDDgMtBqdJ7mxhLje9bEpUrJ8n/9NHYruWKAK3vksRt0a/n4crxcXI4YwipALvaxg5wDHZnnQtsKzuZ9IpqdnWtWLnuVsMB0dwkZdrnsHrG2S7i3i/j4nVjwTVI38Af0tXKzYBAAA="
    },
    "Metadata": {
     "aws:cdk:path": "amplify-northplaybook-actwr-sandbox-b72e1d22f0/data/amplifyData/UserProfile/CDKMetadata/Default"

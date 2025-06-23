@@ -311,7 +311,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02LwQ6CMBBEv4V7WYF40KPh5MUYjGdT21UXyjahi8Q0/XdDDOppZt7MVFBuN1Bkegq5sV3u6ArxgEHQnkSbTukpXKLxdybxEM8Bh6P3TtU3/vrF1I6Q5b/6kb1FFpLXcv7PjXe4E9Hm0SNLUqR7iDOch7OmpBoMfhwMJsXeIrRh9awKKNdQZG0gyoeRhXqE5qNvO+3La9cAAAA="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02LwQrCMBBEv6X3dI3BH5CevIhUPEtMVt02TSDZWiTk36VItaeZeTOjQEkFstJTqo3ta0c3yEdMjPbM2vRCT+maTXh44gD5kjCeQnCiufufX0zjCD2vqz85WPRM/F7O69wGh3tmbZ4Dei6C9AB5hvNw1lJEiymM0WARPliELm1eSsJ2B7LqElEdR880ILRf/QBOrXI61wAAAA=="
    },
    "Metadata": {
     "aws:cdk:path": "amplify-northplaybook-actwr-sandbox-b72e1d22f0/auth/CDKMetadata/Default"
