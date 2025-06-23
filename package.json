@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy": "amplify push --yes",
+    "deploy": "npx ampx sandbox --once",
     "deploy:build": "npm run build && npm run deploy",
     "amplify:init": "amplify init",
     "amplify:status": "amplify status",
