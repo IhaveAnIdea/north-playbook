@@ -61,11 +61,11 @@ const schema = a.schema({
       question: a.string().required(),
       instructions: a.string(), // Detailed instructions for users
       // Required response types that admin specifies
-      requireText: a.boolean().default(false),
-      requireImage: a.boolean().default(false),
-      requireAudio: a.boolean().default(false),
-      requireVideo: a.boolean().default(false),
-      requireDocument: a.boolean().default(false),
+      requireText: a.enum(['not_required', 'required', 'or']),
+      requireImage: a.enum(['not_required', 'required', 'or']),
+      requireAudio: a.enum(['not_required', 'required', 'or']),
+      requireVideo: a.enum(['not_required', 'required', 'or']),
+      requireDocument: a.enum(['not_required', 'required', 'or']),
       // Optional configurations
       textPrompt: a.string(), // Custom prompt for text input
       maxTextLength: a.integer(), // Character limit for text

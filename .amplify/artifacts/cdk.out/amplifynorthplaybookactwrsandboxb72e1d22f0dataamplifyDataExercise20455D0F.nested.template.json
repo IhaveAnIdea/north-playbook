@@ -995,7 +995,7 @@
     "FunctionVersion": "2018-05-29",
     "Name": "MutationcreateExerciseinit1Function",
     "RequestMappingTemplateS3Location": {
-     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1778a00b479f8b9482bfb4c630b78b7bda50078d428816e78c312d7073baa35e.vtl"
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c3ae30849cefde2e2d84aa4201b55e9ef55da1238f28c8a0399e496a27a143dd.vtl"
     },
     "ResponseMappingTemplate": "$util.toJson({})"
    },

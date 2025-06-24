@@ -9,6 +9,8 @@ import type { Schema } from '../../../amplify/data/resource';
 
 const client = generateClient<Schema>();
 
+type RequirementType = 'not_required' | 'required' | 'or';
+
 interface ExerciseEditorProps {
   exerciseId?: string;
   onSave?: (exercise: unknown) => void;
@@ -33,11 +35,11 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel }: Exercis
     question: string;
     instructions: string;
     // Required response types
-    requireText: boolean;
-    requireImage: boolean;
-    requireAudio: boolean;
-    requireVideo: boolean;
-    requireDocument: boolean;
+    requireText: RequirementType;
+    requireImage: RequirementType;
+    requireAudio: RequirementType;
+    requireVideo: RequirementType;
+    requireDocument: RequirementType;
     // Optional configurations
     textPrompt: string;
     maxTextLength: number | null;
@@ -51,11 +53,11 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel }: Exercis
     category: 'achievement_based_identity',
     question: '',
     instructions: '',
-    requireText: false,
-    requireImage: false,
-    requireAudio: false,
-    requireVideo: false,
-    requireDocument: false,
+    requireText: 'not_required',
+    requireImage: 'not_required',
+    requireAudio: 'not_required',
+    requireVideo: 'not_required',
+    requireDocument: 'not_required',
     textPrompt: '',
     maxTextLength: null,
     allowMultipleImages: false,
@@ -82,11 +84,11 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel }: Exercis
           category: data.category || 'achievement_based_identity',
           question: data.question || '',
           instructions: data.instructions || '',
-          requireText: data.requireText ?? false,
-          requireImage: data.requireImage ?? false,
-          requireAudio: data.requireAudio ?? false,
-          requireVideo: data.requireVideo ?? false,
-          requireDocument: data.requireDocument ?? false,
+          requireText: data.requireText ?? 'not_required',
+          requireImage: data.requireImage ?? 'not_required',
+          requireAudio: data.requireAudio ?? 'not_required',
+          requireVideo: data.requireVideo ?? 'not_required',
+          requireDocument: data.requireDocument ?? 'not_required',
           textPrompt: data.textPrompt ?? '',
           maxTextLength: data.maxTextLength || null,
           allowMultipleImages: data.allowMultipleImages ?? false,
@@ -128,13 +130,15 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel }: Exercis
       setIsLoading(true);
       setError(null);
 
-      // Validate that at least one response type is required
-      const hasRequiredType = exercise.requireText || exercise.requireImage || 
-                             exercise.requireAudio || exercise.requireVideo || 
-                             exercise.requireDocument;
+      // Validate that at least one response type is required or OR
+      const hasRequiredType = exercise.requireText !== 'not_required' || 
+                             exercise.requireImage !== 'not_required' || 
+                             exercise.requireAudio !== 'not_required' || 
+                             exercise.requireVideo !== 'not_required' || 
+                             exercise.requireDocument !== 'not_required';
       
       if (!hasRequiredType) {
-        setError('Please select at least one required response type.');
+        setError('Please select at least one response type as required or OR.');
         setIsLoading(false);
         return;
       }
@@ -468,140 +472,292 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel }: Exercis
         {/* Required Response Types */}
         <div className="bg-gray-50 p-4 rounded-lg">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Required Response Types</h3>
-          <p className="text-sm text-gray-600 mb-4">
-            Select what types of responses users must provide to complete this exercise. Users will only see the fields you mark as required.
-          </p>
+                      <p className="text-sm text-gray-600 mb-4">
+              Configure response requirements for each type. &quot;Required&quot; means always mandatory, &quot;OR&quot; means at least one OR response must be provided, &quot;Not Required&quot; means optional.
+            </p>
           
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Text Response */}
-            <div className="flex items-start space-x-3">
-              <input
-                type="checkbox"
-                id="requireText"
-                checked={exercise.requireText}
-                onChange={(e) => setExercise(prev => ({ ...prev, requireText: e.target.checked }))}
-                className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <div className="flex-1">
-                <label htmlFor="requireText" className="text-sm font-medium text-gray-700">
-                  📝 Text Response
-                </label>
-                <p className="text-sm text-gray-500">Users must enter a text response</p>
-                {exercise.requireText && (
-                  <div className="mt-2 space-y-2">
-                    <input
-                      type="text"
-                      value={exercise.textPrompt}
-                      onChange={(e) => setExercise(prev => ({ ...prev, textPrompt: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Custom prompt for text input (optional)"
-                    />
-                    <input
-                      type="number"
-                      value={exercise.maxTextLength || ''}
-                      onChange={(e) => setExercise(prev => ({ ...prev, maxTextLength: e.target.value ? parseInt(e.target.value) : null }))}
-                      className="w-32 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Max characters"
-                      min="1"
-                    />
-                  </div>
-                )}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center space-x-3 mb-3">
+                <span className="text-lg">📝</span>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900">Text Response</h4>
+                  <p className="text-xs text-gray-500">Users can enter a written response</p>
+                </div>
               </div>
+              <div className="flex space-x-4 mb-3">
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="requireText"
+                    value="not_required"
+                    checked={exercise.requireText === 'not_required'}
+                    onChange={(e) => setExercise(prev => ({ ...prev, requireText: e.target.value as RequirementType }))}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Not Required</span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="requireText"
+                    value="required"
+                    checked={exercise.requireText === 'required'}
+                    onChange={(e) => setExercise(prev => ({ ...prev, requireText: e.target.value as any }))}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Required</span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="requireText"
+                    value="or"
+                    checked={exercise.requireText === 'or'}
+                    onChange={(e) => setExercise(prev => ({ ...prev, requireText: e.target.value as any }))}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">OR</span>
+                </label>
+              </div>
+              {exercise.requireText !== 'not_required' && (
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={exercise.textPrompt}
+                    onChange={(e) => setExercise(prev => ({ ...prev, textPrompt: e.target.value }))}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Custom prompt for text input (optional)"
+                  />
+                  <input
+                    type="number"
+                    value={exercise.maxTextLength || ''}
+                    onChange={(e) => setExercise(prev => ({ ...prev, maxTextLength: e.target.value ? parseInt(e.target.value) : null }))}
+                    className="w-32 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Max characters"
+                    min="1"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Image Response */}
-            <div className="flex items-start space-x-3">
-              <input
-                type="checkbox"
-                id="requireImage"
-                checked={exercise.requireImage}
-                onChange={(e) => setExercise(prev => ({ ...prev, requireImage: e.target.checked }))}
-                className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <div className="flex-1">
-                <label htmlFor="requireImage" className="text-sm font-medium text-gray-700">
-                  🖼️ Image Upload
-                </label>
-                <p className="text-sm text-gray-500">Users must upload at least one image</p>
-                {exercise.requireImage && (
-                  <div className="mt-2">
-                    <label className="inline-flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={exercise.allowMultipleImages}
-                        onChange={(e) => setExercise(prev => ({ ...prev, allowMultipleImages: e.target.checked }))}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <span className="ml-2 text-sm text-gray-700">Allow multiple images</span>
-                    </label>
-                  </div>
-                )}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center space-x-3 mb-3">
+                <span className="text-lg">🖼️</span>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900">Image Upload</h4>
+                  <p className="text-xs text-gray-500">Users can upload images</p>
+                </div>
               </div>
+              <div className="flex space-x-4 mb-3">
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="requireImage"
+                    value="not_required"
+                    checked={exercise.requireImage === 'not_required'}
+                    onChange={(e) => setExercise(prev => ({ ...prev, requireImage: e.target.value as any }))}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Not Required</span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="requireImage"
+                    value="required"
+                    checked={exercise.requireImage === 'required'}
+                    onChange={(e) => setExercise(prev => ({ ...prev, requireImage: e.target.value as any }))}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Required</span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="requireImage"
+                    value="or"
+                    checked={exercise.requireImage === 'or'}
+                    onChange={(e) => setExercise(prev => ({ ...prev, requireImage: e.target.value as any }))}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">OR</span>
+                </label>
+              </div>
+              {exercise.requireImage !== 'not_required' && (
+                <div>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={exercise.allowMultipleImages}
+                      onChange={(e) => setExercise(prev => ({ ...prev, allowMultipleImages: e.target.checked }))}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Allow multiple images</span>
+                  </label>
+                </div>
+              )}
             </div>
 
             {/* Audio Response */}
-            <div className="flex items-start space-x-3">
-              <input
-                type="checkbox"
-                id="requireAudio"
-                checked={exercise.requireAudio}
-                onChange={(e) => setExercise(prev => ({ ...prev, requireAudio: e.target.checked }))}
-                className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <div className="flex-1">
-                <label htmlFor="requireAudio" className="text-sm font-medium text-gray-700">
-                  🎵 Audio Recording
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center space-x-3 mb-3">
+                <span className="text-lg">🎵</span>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900">Audio Recording</h4>
+                  <p className="text-xs text-gray-500">Users can record or upload audio</p>
+                </div>
+              </div>
+              <div className="flex space-x-4">
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="requireAudio"
+                    value="not_required"
+                    checked={exercise.requireAudio === 'not_required'}
+                    onChange={(e) => setExercise(prev => ({ ...prev, requireAudio: e.target.value as any }))}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Not Required</span>
                 </label>
-                <p className="text-sm text-gray-500">Users must record or upload an audio file</p>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="requireAudio"
+                    value="required"
+                    checked={exercise.requireAudio === 'required'}
+                    onChange={(e) => setExercise(prev => ({ ...prev, requireAudio: e.target.value as any }))}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Required</span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="requireAudio"
+                    value="or"
+                    checked={exercise.requireAudio === 'or'}
+                    onChange={(e) => setExercise(prev => ({ ...prev, requireAudio: e.target.value as any }))}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">OR</span>
+                </label>
               </div>
             </div>
 
             {/* Video Response */}
-            <div className="flex items-start space-x-3">
-              <input
-                type="checkbox"
-                id="requireVideo"
-                checked={exercise.requireVideo}
-                onChange={(e) => setExercise(prev => ({ ...prev, requireVideo: e.target.checked }))}
-                className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <div className="flex-1">
-                <label htmlFor="requireVideo" className="text-sm font-medium text-gray-700">
-                  🎥 Video Recording
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center space-x-3 mb-3">
+                <span className="text-lg">🎥</span>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900">Video Recording</h4>
+                  <p className="text-xs text-gray-500">Users can record or upload video</p>
+                </div>
+              </div>
+              <div className="flex space-x-4">
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="requireVideo"
+                    value="not_required"
+                    checked={exercise.requireVideo === 'not_required'}
+                    onChange={(e) => setExercise(prev => ({ ...prev, requireVideo: e.target.value as any }))}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Not Required</span>
                 </label>
-                <p className="text-sm text-gray-500">Users must record or upload a video file</p>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="requireVideo"
+                    value="required"
+                    checked={exercise.requireVideo === 'required'}
+                    onChange={(e) => setExercise(prev => ({ ...prev, requireVideo: e.target.value as any }))}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Required</span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="requireVideo"
+                    value="or"
+                    checked={exercise.requireVideo === 'or'}
+                    onChange={(e) => setExercise(prev => ({ ...prev, requireVideo: e.target.value as any }))}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">OR</span>
+                </label>
               </div>
             </div>
 
             {/* Document Response */}
-            <div className="flex items-start space-x-3">
-              <input
-                type="checkbox"
-                id="requireDocument"
-                checked={exercise.requireDocument}
-                onChange={(e) => setExercise(prev => ({ ...prev, requireDocument: e.target.checked }))}
-                className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <div className="flex-1">
-                <label htmlFor="requireDocument" className="text-sm font-medium text-gray-700">
-                  📄 Document Upload
-                </label>
-                <p className="text-sm text-gray-500">Users must upload a document (PDF, DOC, TXT, etc.)</p>
-                {exercise.requireDocument && (
-                  <div className="mt-2">
-                    <label className="inline-flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={exercise.allowMultipleDocuments}
-                        onChange={(e) => setExercise(prev => ({ ...prev, allowMultipleDocuments: e.target.checked }))}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <span className="ml-2 text-sm text-gray-700">Allow multiple documents</span>
-                    </label>
-                  </div>
-                )}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center space-x-3 mb-3">
+                <span className="text-lg">📄</span>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900">Document Upload</h4>
+                  <p className="text-xs text-gray-500">Users can upload documents</p>
+                </div>
               </div>
+              <div className="flex space-x-4 mb-3">
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="requireDocument"
+                    value="not_required"
+                    checked={exercise.requireDocument === 'not_required'}
+                    onChange={(e) => setExercise(prev => ({ ...prev, requireDocument: e.target.value as any }))}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Not Required</span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="requireDocument"
+                    value="required"
+                    checked={exercise.requireDocument === 'required'}
+                    onChange={(e) => setExercise(prev => ({ ...prev, requireDocument: e.target.value as any }))}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Required</span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="requireDocument"
+                    value="or"
+                    checked={exercise.requireDocument === 'or'}
+                    onChange={(e) => setExercise(prev => ({ ...prev, requireDocument: e.target.value as any }))}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">OR</span>
+                </label>
+              </div>
+              {exercise.requireDocument !== 'not_required' && (
+                <div>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={exercise.allowMultipleDocuments}
+                      onChange={(e) => setExercise(prev => ({ ...prev, allowMultipleDocuments: e.target.checked }))}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Allow multiple documents</span>
+                  </label>
+                </div>
+              )}
             </div>
+          </div>
+
+          {/* Helper text for OR logic */}
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <p className="text-sm text-blue-800">
+              <strong>💡 How it works:</strong> Users must provide all "Required" responses. For "OR" responses, they must provide at least one from the OR group. For example, if Text and Image are both set to "OR", users can provide either text OR image (or both).
+            </p>
           </div>
         </div>
 
