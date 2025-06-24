@@ -153,7 +153,7 @@ export default function UserResponseEditor({ exerciseId, responseId, onSave, onC
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">
-          {isEditing ? 'Edit Your Response' : 'Complete Exercise'}
+          {isEditing ? 'Edit Your Response' : 'Work on Assignment'}
         </h1>
         <p className="text-gray-600 mt-2">
           {isEditing ? 'Update your response to this exercise' : 'Share your thoughts and reflections'}

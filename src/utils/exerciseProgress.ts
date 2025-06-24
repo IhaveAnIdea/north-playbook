@@ -69,7 +69,12 @@ export function getResponseRequirements(exercise: {
         required.push(key);
       }
     } else if (field === 'or') {
-      // OR types are handled separately in orTypes
+      if (orTypes.includes(key)) {
+        // This is part of OR group - handled separately in orTypes
+      } else {
+        // Single OR field should be treated as required
+        required.push(key);
+      }
     }
   });
 
@@ -82,7 +87,8 @@ export function getResponseRequirements(exercise: {
 
 export function calculateExerciseProgress(
   requirements: ExerciseRequirements,
-  response?: ExerciseResponse
+  response?: ExerciseResponse,
+  actualStatus?: 'draft' | 'completed'
 ): ProgressCalculation {
   // Default empty response if none provided
   const actualResponse: ExerciseResponse = response || {};
@@ -121,13 +127,15 @@ export function calculateExerciseProgress(
 
   // Total required is individual required + 1 for OR group (if exists)
   const totalRequired = required.length + (orGroup.length > 0 ? 1 : 0);
-  const isComplete = missingRequirements.length === 0 && totalRequired > 0;
-  const percentageComplete = totalRequired > 0 ? Math.round((completedCount / totalRequired) * 100) : 0;
+  const isComplete = missingRequirements.length === 0;
+  const percentageComplete = totalRequired > 0 ? Math.round((completedCount / totalRequired) * 100) : 100;
 
-  // Determine state
+  // Determine state based on actual status, not just requirements
   let state: ExerciseState;
-  if (isComplete) {
+  if (actualStatus === 'completed') {
     state = 'completed';
+  } else if (isComplete) {
+    state = 'incomplete'; // Has all requirements but not marked complete yet
   } else if (completedCount > 0) {
     state = 'incomplete';
   } else {

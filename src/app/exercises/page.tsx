@@ -7,7 +7,7 @@ import { useAuthenticator } from '@aws-amplify/ui-react';
 import { useUserRole } from '@/hooks/useUserRole';
 import ImageThumbnail from '@/components/ui/ImageThumbnail';
 import ExerciseProgress from '@/components/exercises/ExerciseProgress';
-import { calculateExerciseProgress } from '@/utils/exerciseProgress';
+import { calculateExerciseProgress, convertLegacyRequirements } from '@/utils/exerciseProgress';
 import type { Schema } from '../../../amplify/data/resource';
 import AudioThumbnail from '@/components/ui/AudioThumbnail';
 import VideoThumbnail from '@/components/ui/VideoThumbnail';
@@ -22,11 +22,12 @@ interface Exercise {
   category: string;
   question: string;
   promptType: string;
-  requireText: boolean;
-  requireImage: boolean;
-  requireAudio: boolean;
-  requireVideo: boolean;
-  requireDocument: boolean;
+  requireText: 'not_required' | 'required' | 'or' | boolean;
+  requireImage: 'not_required' | 'required' | 'or' | boolean;
+  requireAudio: 'not_required' | 'required' | 'or' | boolean;
+  requireVideo: 'not_required' | 'required' | 'or' | boolean;
+  requireDocument: 'not_required' | 'required' | 'or' | boolean;
+  instructions?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -124,14 +125,16 @@ export default function ExercisesPage() {
           new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime()
         )[0];
 
-        // Calculate actual completion based on requirements
-        const requirements = {
-          requireText: exercise.requireText ?? false,
-          requireImage: exercise.requireImage ?? false,
-          requireAudio: exercise.requireAudio ?? false,
-          requireVideo: exercise.requireVideo ?? false,
-          requireDocument: exercise.requireDocument ?? false,
-        };
+        // Calculate actual completion based on requirements (convert to enum format)
+        const requirements = convertLegacyRequirements(exercise);
+
+        const latestResponseForProgress = lastResponse ? {
+          textResponse: lastResponse.responseText || undefined,
+          imageUrls: lastResponse.imageS3Keys?.filter((key): key is string => key !== null) || [],
+          audioUrl: lastResponse.audioS3Key || undefined,
+          videoUrl: lastResponse.videoS3Key || undefined,
+          documentUrls: lastResponse.documentS3Keys?.filter((key): key is string => key !== null) || [],
+        } : undefined;
 
         const latestResponse = lastResponse ? {
           responseText: lastResponse.responseText || undefined,
@@ -139,10 +142,10 @@ export default function ExercisesPage() {
           audioS3Key: lastResponse.audioS3Key || undefined,
           videoS3Key: lastResponse.videoS3Key || undefined,
           documentS3Keys: lastResponse.documentS3Keys?.filter((key): key is string => key !== null) || undefined,
-          status: lastResponse.status as 'draft' | 'completed' | undefined, // Include the response status
+          status: lastResponse.status as 'draft' | 'completed' | undefined,
         } : undefined;
 
-        const progress = calculateExerciseProgress(requirements, latestResponse);
+        const progress = calculateExerciseProgress(requirements, latestResponseForProgress, lastResponse?.status as 'draft' | 'completed' | undefined);
         
         // Map new states to the existing interface
         let status: 'unstarted' | 'started' | 'completed';
@@ -529,14 +532,15 @@ export default function ExercisesPage() {
                         {/* Progress Info */}
                         <div className="mb-4">
                           <ExerciseProgress
-                            requirements={{
-                              requireText: exercise.requireText,
-                              requireImage: exercise.requireImage,
-                              requireAudio: exercise.requireAudio,
-                              requireVideo: exercise.requireVideo,
-                              requireDocument: exercise.requireDocument,
-                            }}
-                            response={exercise.latestResponse}
+                            requirements={convertLegacyRequirements(exercise as any)}
+                            response={exercise.latestResponse ? {
+                              textResponse: exercise.latestResponse.responseText,
+                              imageUrls: exercise.latestResponse.imageS3Keys || [],
+                              audioUrl: exercise.latestResponse.audioS3Key,
+                              videoUrl: exercise.latestResponse.videoS3Key,
+                              documentUrls: exercise.latestResponse.documentS3Keys || [],
+                            } : undefined}
+                            actualStatus={exercise.latestResponse?.status}
                             showDetails={true}
                             compact={false}
                           />
@@ -618,14 +622,15 @@ export default function ExercisesPage() {
                           </div>
                           <div>
                             {(() => {
-                              const requirements = {
-                                requireText: exercise.requireText,
-                                requireImage: exercise.requireImage,
-                                requireAudio: exercise.requireAudio,
-                                requireVideo: exercise.requireVideo,
-                                requireDocument: exercise.requireDocument,
-                              };
-                              const progress = calculateExerciseProgress(requirements, exercise.latestResponse);
+                              const requirements = convertLegacyRequirements(exercise as any);
+                              const response = exercise.latestResponse ? {
+                                textResponse: exercise.latestResponse.responseText,
+                                imageUrls: exercise.latestResponse.imageS3Keys || [],
+                                audioUrl: exercise.latestResponse.audioS3Key,
+                                videoUrl: exercise.latestResponse.videoS3Key,
+                                documentUrls: exercise.latestResponse.documentS3Keys || [],
+                              } : undefined;
+                              const progress = calculateExerciseProgress(requirements, response, exercise.latestResponse?.status);
                               
                               return (
                                 <Link
@@ -851,14 +856,15 @@ export default function ExercisesPage() {
                   {/* Progress Info */}
                   <div className="mb-3 sm:mb-4">
                     <ExerciseProgress
-                      requirements={{
-                        requireText: exercise.requireText,
-                        requireImage: exercise.requireImage,
-                        requireAudio: exercise.requireAudio,
-                        requireVideo: exercise.requireVideo,
-                        requireDocument: exercise.requireDocument,
-                      }}
-                      response={exercise.latestResponse}
+                      requirements={convertLegacyRequirements(exercise as any)}
+                      response={exercise.latestResponse ? {
+                        textResponse: exercise.latestResponse.responseText,
+                        imageUrls: exercise.latestResponse.imageS3Keys || [],
+                        audioUrl: exercise.latestResponse.audioS3Key,
+                        videoUrl: exercise.latestResponse.videoS3Key,
+                        documentUrls: exercise.latestResponse.documentS3Keys || [],
+                      } : undefined}
+                      actualStatus={exercise.latestResponse?.status}
                       showDetails={false}
                       compact={true}
                     />

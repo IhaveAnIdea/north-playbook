@@ -14,6 +14,7 @@ import {
 interface ExerciseProgressProps {
   requirements: ExerciseRequirements;
   response?: ExerciseResponse;
+  actualStatus?: 'draft' | 'completed';
   showDetails?: boolean;
   compact?: boolean;
 }
@@ -21,10 +22,11 @@ interface ExerciseProgressProps {
 export default function ExerciseProgress({
   requirements,
   response,
+  actualStatus,
   showDetails = true,
   compact = false,
 }: ExerciseProgressProps) {
-  const progress = calculateExerciseProgress(requirements, response);
+  const progress = calculateExerciseProgress(requirements, response, actualStatus);
   const stateInfo = getStateInfo(progress.state);
   const progressColor = getProgressColor(progress.percentageComplete);
 
@@ -121,14 +123,14 @@ export default function ExerciseProgress({
           {/* Missing Requirements */}
           {progress.missingRequirements.length > 0 && (
             <div>
-              <h4 className="text-xs font-medium text-orange-700 mb-1">Still needed:</h4>
+              <h4 className="text-xs font-medium text-red-700 mb-1">Still needed to complete assignment:</h4>
               <div className="flex flex-wrap gap-1">
                 {progress.missingRequirements.map((req, index) => (
                   <span
                     key={index}
-                    className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-800"
+                    className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 text-red-800"
                   >
-                    ⏳ {req}
+                    📝 {req}
                   </span>
                 ))}
               </div>
@@ -140,22 +142,22 @@ export default function ExerciseProgress({
       {/* State-based Action Message */}
       {progress.state === 'completed' && (
         <div className="text-xs text-green-600 italic flex items-center space-x-1">
-          <span>✓</span>
-          <span>Exercise completed. View only.</span>
+          <span>✅</span>
+          <span>Assignment completed. View only.</span>
         </div>
       )}
       
       {progress.state === 'incomplete' && (
         <div className="text-xs text-blue-600 italic flex items-center space-x-1">
-          <span>🚀</span>
-          <span>In progress - continue when ready.</span>
+          <span>📝</span>
+          <span>In progress - complete required elements to finish.</span>
         </div>
       )}
 
       {progress.state === 'unstarted' && (
         <div className="text-xs text-gray-600 italic flex items-center space-x-1">
           <span>🔓</span>
-          <span>Ready to start this exercise.</span>
+          <span>Ready to start working on this assignment.</span>
         </div>
       )}
     </div>

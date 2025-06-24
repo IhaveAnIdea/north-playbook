@@ -16,11 +16,11 @@ interface Exercise {
   description: string;
   question: string;
   instructions?: string;
-  requireText: 'not_required' | 'required' | 'or' | boolean;
-  requireImage: 'not_required' | 'required' | 'or' | boolean;
-  requireAudio: 'not_required' | 'required' | 'or' | boolean;
-  requireVideo: 'not_required' | 'required' | 'or' | boolean;
-  requireDocument: 'not_required' | 'required' | 'or' | boolean;
+  requireText: 'not_required' | 'required' | 'or';
+  requireImage: 'not_required' | 'required' | 'or';
+  requireAudio: 'not_required' | 'required' | 'or';
+  requireVideo: 'not_required' | 'required' | 'or';
+  requireDocument: 'not_required' | 'required' | 'or';
   textPrompt?: string;
   maxTextLength?: number;
   allowMultipleImages: boolean;
@@ -66,22 +66,28 @@ export default function CompleteExercisePage() {
           return;
         }
 
+        // Convert legacy boolean values to enum values
+        const convertRequirement = (value: unknown): 'not_required' | 'required' | 'or' => {
+          if (value === true || value === 'required') return 'required';
+          if (value === 'or') return 'or';
+          return 'not_required';
+        };
+
         setExercise({
           id: data.id,
           title: data.title || '',
           description: data.description || '',
           question: data.question || '',
           instructions: data.instructions || undefined,
-          requireText: data.requireText ?? false,
-          requireImage: data.requireImage ?? false,
-          requireAudio: data.requireAudio ?? false,
-          requireVideo: data.requireVideo ?? false,
-          requireDocument: data.requireDocument ?? false,
+          requireText: convertRequirement(data.requireText),
+          requireImage: convertRequirement(data.requireImage),
+          requireAudio: convertRequirement(data.requireAudio),
+          requireVideo: convertRequirement(data.requireVideo),
+          requireDocument: convertRequirement(data.requireDocument),
           textPrompt: data.textPrompt || undefined,
           maxTextLength: data.maxTextLength || undefined,
           allowMultipleImages: data.allowMultipleImages ?? false,
           allowMultipleDocuments: data.allowMultipleDocuments ?? false,
-
           isActive: data.isActive ?? true,
         });
       } else {
@@ -178,7 +184,7 @@ export default function CompleteExercisePage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">❌</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Unable to Complete Exercise</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Unable to Work on Assignment</h2>
           <p className="text-gray-600 mb-6">{error || 'The exercise could not be loaded.'}</p>
           <button
             onClick={() => router.push('/exercises')}
@@ -201,20 +207,20 @@ export default function CompleteExercisePage() {
               onClick={() => router.push(`/exercises/${exerciseId}`)}
               className="text-gray-600 hover:text-gray-800"
             >
-              ← Back to Exercise
+              ← Back to Assignment
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Complete Exercise</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Work on Assignment</h1>
               {isAdmin && (
                 <p className="text-sm text-amber-600 mt-1">
-                  👨‍💼 Admin Note: You can complete exercises just like regular users. Your responses are tracked separately from template management.
+                  👨‍💼 Admin Note: You can work on assignments just like regular users. Your responses are tracked separately from template management.
                 </p>
               )}
               {existingResponse && (
                 <p className="text-sm text-gray-600 mt-1">
                   {existingResponse.status === 'completed' 
-                    ? 'You have completed this exercise. View only mode.'
-                    : 'You have a draft response for this exercise. Continue editing below.'
+                    ? 'You have completed this assignment. View only mode.'
+                    : 'You have a draft response for this assignment. Continue editing below.'
                   }
                 </p>
               )}

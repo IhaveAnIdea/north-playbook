@@ -10,6 +10,7 @@ import VideoRecordUpload, { VideoData } from '@/components/media/VideoRecordUplo
 import AudioPlayerWrapper from '@/components/media/AudioPlayerWrapper';
 import DocumentUpload from '@/components/media/DocumentUpload';
 import { DocumentData } from '@/components/media/DocumentThumbnail';
+import DocumentThumbnailWrapper from '@/components/media/DocumentThumbnailWrapper';
 import RichTextEditor from '@/components/ui/RichTextEditor';
 import type { Schema } from '../../../amplify/data/resource';
 
@@ -43,6 +44,19 @@ interface ExerciseResponse {
   documentS3Keys?: string[];
   notes?: string;
   createdAt?: string;
+}
+
+interface ResponseData {
+  exerciseId: string;
+  userId: string;
+  status: 'draft' | 'completed';
+  responseText?: string;
+  imageS3Keys?: string[];
+  audioS3Key?: string;
+  videoS3Key?: string;
+  documentS3Keys?: string[];
+  timeSpentSeconds?: number;
+  completedAt?: string;
 }
 
 interface ExerciseResponseFormEnhancedProps {
@@ -84,18 +98,37 @@ export default function ExerciseResponseFormEnhanced({
 
     // Convert saved document S3 keys back to DocumentData objects
     const savedDocumentKeys = existingResponse?.documentS3Keys || [];
-    const savedDocuments: DocumentData[] = savedDocumentKeys.map((s3Key, index) => ({
-      id: s3Key,
-      name: `Saved Document ${index + 1}`,
-      url: '', // Will be populated by DocumentThumbnailWrapper using getUrl
-      s3Key: s3Key,
-      type: 'application/pdf', // Default type
-      size: 0,
-      metadata: {
-        fromDatabase: true,
-        uploadDate: existingResponse?.createdAt || new Date().toISOString()
-      }
-    }));
+    const savedDocuments: DocumentData[] = savedDocumentKeys.map((s3Key, index) => {
+      // Extract filename from S3 key (format: users/{userId}/playbook/documents/{filename})
+      const fileName = s3Key.split('/').pop() || `Saved Document ${index + 1}`;
+      
+      // Determine file type from extension
+      const getFileTypeFromName = (name: string): string => {
+        const extension = name.split('.').pop()?.toLowerCase();
+        switch (extension) {
+          case 'pdf': return 'application/pdf';
+          case 'doc': return 'application/msword';
+          case 'docx': return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+          case 'txt': return 'text/plain';
+          case 'rtf': return 'application/rtf';
+          case 'odt': return 'application/vnd.oasis.opendocument.text';
+          default: return 'application/octet-stream';
+        }
+      };
+
+      return {
+        id: s3Key,
+        name: fileName,
+        url: '', // Will be populated by DocumentThumbnailWrapper using getUrl
+        s3Key: s3Key,
+        type: getFileTypeFromName(fileName),
+        size: 0, // Size not available from S3 key, would need separate API call
+        metadata: {
+          fromDatabase: true,
+          uploadDate: existingResponse?.createdAt || new Date().toISOString()
+        }
+      };
+    });
 
     return {
       responseText: existingResponse?.responseText || '',
@@ -118,34 +151,40 @@ export default function ExerciseResponseFormEnhanced({
   const [error, setError] = useState<string | null>(null);
   const [startTime] = useState(Date.now());
 
+  // Check if assignment is completed (read-only mode)
+  const isCompleted = existingResponse?.status === 'completed';
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Validation to check if all required fields are filled
   const validateRequiredFields = () => {
-    const errors: string[] = [];
+    // Use the same logic as calculateExerciseProgress for consistency
+    const requirements = {
+      requireText: exercise.requireText,
+      requireImage: exercise.requireImage,
+      requireAudio: exercise.requireAudio,
+      requireVideo: exercise.requireVideo,
+      requireDocument: exercise.requireDocument,
+      instructions: exercise.instructions
+    };
 
-    if (exercise.requireText && !response.responseText.trim()) {
-      errors.push('Text response is required');
+    const currentResponse = {
+      textResponse: response.responseText,
+      imageUrls: [...response.imageS3Keys, ...response.imageFiles.map(f => f.name)],
+      audioUrl: response.audioS3Key || (response.audioFile ? 'pending' : ''),
+      videoUrl: response.videoS3Keys[0] || (response.videos.length > 0 ? 'pending' : ''),
+      documentUrls: [...new Set([...response.documentS3Keys, ...response.documents.map(d => d.s3Key || d.id).filter(Boolean)])],
+    };
+
+    const progress = calculateExerciseProgress(requirements, currentResponse, existingResponse?.status);
+    
+    // If not complete, return the missing requirements from the progress calculation
+    if (!progress.hasAllRequirements) {
+      return progress.missingRequirements;
     }
 
-    if (exercise.requireImage && response.imageFiles.length === 0 && response.imageS3Keys.length === 0) {
-      errors.push('At least one image is required');
-    }
-
-    if (exercise.requireAudio && !response.audioFile && !response.audioS3Key) {
-      errors.push('Audio recording is required');
-    }
-
-    if (exercise.requireVideo && response.videos.length === 0 && (!response.videoS3Key)) {
-      errors.push('Video recording is required');
-    }
-
-    if (exercise.requireDocument && response.documents.length === 0 && response.documentS3Keys.length === 0) {
-      errors.push('At least one document is required');
-    }
-
-    return errors;
+    return [];
   };
 
   // File upload helper
@@ -329,7 +368,7 @@ export default function ExerciseResponseFormEnhanced({
       const finalAudioS3Key = response.audioS3Key || uploadedAudioKey;
 
       // Save response as draft with all uploaded media
-      const responseData: any = {
+      const responseData: ResponseData = {
         exerciseId: exercise.id,
         userId: user?.userId || '',
         status: 'draft' as const,
@@ -422,10 +461,11 @@ export default function ExerciseResponseFormEnhanced({
     try {
       setError(null);
       
-      // Validate required fields
+      // Validate required fields before allowing completion
       const validationErrors = validateRequiredFields();
+      console.log('Validation check:', { validationErrors, hasErrors: validationErrors.length > 0 });
       if (validationErrors.length > 0) {
-        setError(validationErrors.join(', '));
+        setError(`Please complete all requirements: ${validationErrors.join(', ')}`);
         return;
       }
 
@@ -520,7 +560,7 @@ export default function ExerciseResponseFormEnhanced({
       const finalAudioS3Key = response.audioS3Key || uploadedAudioKey;
 
       // Create complete response with all media assets
-      const responseData: any = {
+      const responseData: ResponseData = {
         exerciseId: exercise.id,
         userId: user?.userId || '',
         status: 'completed' as const,
@@ -583,7 +623,7 @@ export default function ExerciseResponseFormEnhanced({
         console.error('❌ Database complete save errors (full details):', JSON.stringify(savedResponse.errors, null, 2));
         console.error('❌ Complete error messages:', savedResponse.errors.map(e => e.message));
         console.error('❌ Complete error types:', savedResponse.errors.map(e => e.errorType));
-        setError(`Failed to complete exercise: ${savedResponse.errors.map(e => e.message).join(', ')}`);
+        setError(`Failed to complete assignment: ${savedResponse.errors.map(e => e.message).join(', ')}`);
         return;
       }
 
@@ -606,7 +646,7 @@ export default function ExerciseResponseFormEnhanced({
           exerciseResponseId: savedResponse.data?.id || undefined,
           title: exercise.title,
           content: response.responseText || 'Exercise completed',
-          category: exercise.category || 'reflection',
+          category: 'reflection', // Default category for exercises
           insights: JSON.stringify([]), // Store as JSON string
           audioS3Keys: finalAudioS3Key ? [finalAudioS3Key] : [],
           videoS3Keys: finalVideoS3Keys || [],
@@ -632,7 +672,7 @@ export default function ExerciseResponseFormEnhanced({
       onComplete?.(savedResponse);
     } catch (error) {
       console.error('Error completing exercise:', error);
-      setError('Failed to complete exercise. Please try again.');
+              setError('Failed to complete assignment. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -664,8 +704,6 @@ export default function ExerciseResponseFormEnhanced({
     }
   };
 
-
-
   const ImagePreview = ({ s3Key, index }: { s3Key: string; index: number }) => {
     const [imageUrl, setImageUrl] = useState<string>('');
 
@@ -682,17 +720,19 @@ export default function ExerciseResponseFormEnhanced({
           alt={`Uploaded image ${index + 1}`}
           className="w-32 h-32 object-cover rounded border"
         />
-        <button
-          onClick={() => {
-            setResponse(prev => ({
-              ...prev,
-              imageS3Keys: prev.imageS3Keys.filter((_, i) => i !== index)
-            }));
-          }}
-          className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-700"
-        >
-          ×
-        </button>
+        {!isCompleted && (
+          <button
+            onClick={() => {
+              setResponse(prev => ({
+                ...prev,
+                imageS3Keys: prev.imageS3Keys.filter((_, i) => i !== index)
+              }));
+            }}
+            className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-700"
+          >
+            ×
+          </button>
+        )}
       </div>
     );
   };
@@ -742,13 +782,13 @@ export default function ExerciseResponseFormEnhanced({
             requireDocument: exercise.requireDocument,
           }}
           response={{
-            responseText: response.responseText,
-            imageS3Keys: [...response.imageS3Keys, ...response.imageFiles.map(f => f.name)],
-            audioS3Key: response.audioS3Key || (response.audioFile ? 'pending' : ''),
-            videoS3Key: response.videoS3Keys[0] || (response.videos.length > 0 ? 'pending' : ''),
-            documentS3Keys: [...new Set([...response.documentS3Keys, ...response.documents.map(d => d.s3Key || d.id).filter(Boolean)])],
-            status: existingResponse?.status,
+            textResponse: response.responseText,
+            imageUrls: [...response.imageS3Keys, ...response.imageFiles.map(f => f.name)],
+            audioUrl: response.audioS3Key || (response.audioFile ? 'pending' : ''),
+            videoUrl: response.videoS3Keys[0] || (response.videos.length > 0 ? 'pending' : ''),
+            documentUrls: [...new Set([...response.documentS3Keys, ...response.documents.map(d => d.s3Key || d.id).filter(Boolean)])],
           }}
+          actualStatus={existingResponse?.status}
           showDetails={true}
           compact={false}
         />
@@ -761,38 +801,42 @@ export default function ExerciseResponseFormEnhanced({
       )}
 
       <div className="space-y-6">
-        {/* Text Response */}
-        {exercise.requireText && (
+        {/* Text Response - Only show if required or optional (OR) */}
+        {(exercise.requireText === 'required' || exercise.requireText === 'or') && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {exercise.textPrompt || 'Your Response'} *
+              {isCompleted && <span className="ml-2 text-sm text-gray-500 italic">(Read-only)</span>}
             </label>
             <RichTextEditor
               value={response.responseText}
-              onChange={(content) => {
+              onChange={isCompleted ? () => {} : (content) => {
                 setResponse(prev => ({ ...prev, responseText: content }));
               }}
               placeholder={exercise.textPrompt ? `Enter your response for: ${exercise.textPrompt}` : "Enter your response..."}
               maxLength={exercise.maxTextLength}
               id={`exercise-${exercise.id}-text-response`}
-              className="mb-2"
+              className={`mb-2 ${isCompleted ? 'pointer-events-none opacity-75' : ''}`}
             />
           </div>
         )}
 
-        {/* Image Upload */}
-        {exercise.requireImage && (
+        {/* Image Upload - Only show if required or optional (OR) */}
+        {(exercise.requireImage === 'required' || exercise.requireImage === 'or') && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Image Upload * {exercise.allowMultipleImages && '(Multiple allowed)'}
+              {isCompleted && <span className="ml-2 text-sm text-gray-500 italic">(Read-only)</span>}
             </label>
-            <input
-              type="file"
-              accept="image/*"
-              multiple={exercise.allowMultipleImages}
-              onChange={(e) => e.target.files && handleImageFiles(e.target.files)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            {!isCompleted && (
+              <input
+                type="file"
+                accept="image/*"
+                multiple={exercise.allowMultipleImages}
+                onChange={(e) => e.target.files && handleImageFiles(e.target.files)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            )}
             
             {/* Show uploaded images */}
             {response.imageS3Keys.length > 0 && (
@@ -807,7 +851,7 @@ export default function ExerciseResponseFormEnhanced({
             )}
             
             {/* Show local files waiting to upload with preview */}
-            {response.imageFiles.length > 0 && (
+            {response.imageFiles.length > 0 && !isCompleted && (
               <div className="mt-2 space-y-2">
                 <h4 className="text-sm font-medium text-gray-700">Ready to Upload:</h4>
                 <div className="flex flex-wrap gap-2">
@@ -839,14 +883,15 @@ export default function ExerciseResponseFormEnhanced({
           </div>
         )}
 
-        {/* Audio Recording */}
-        {exercise.requireAudio && (
+        {/* Audio Recording - Only show if required or optional (OR) */}
+        {(exercise.requireAudio === 'required' || exercise.requireAudio === 'or') && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Audio Recording *
+              {isCompleted && <span className="ml-2 text-sm text-gray-500 italic">(Read-only)</span>}
             </label>
             <div className="flex items-center space-x-4">
-              {!isRecording ? (
+              {!isCompleted && !isRecording ? (
                 <button
                   onClick={startAudioRecording}
                   disabled={isLoading}
@@ -855,7 +900,7 @@ export default function ExerciseResponseFormEnhanced({
                   <span>🎤</span>
                   <span>Start Recording</span>
                 </button>
-              ) : (
+              ) : !isCompleted && isRecording ? (
                 <button
                   onClick={stopAudioRecording}
                   className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
@@ -863,8 +908,8 @@ export default function ExerciseResponseFormEnhanced({
                   <span>⏹️</span>
                   <span>Stop Recording ({formatTime(recordingTime)})</span>
                 </button>
-              )}
-              {response.audioFile && (
+              ) : null}
+              {response.audioFile && !isCompleted && (
                 <span className="text-blue-600 text-sm">🎤 Audio recorded (ready to upload)</span>
               )}
               {response.audioS3Key && (
@@ -880,41 +925,83 @@ export default function ExerciseResponseFormEnhanced({
           </div>
         )}
 
-        {/* Video Recording and Upload */}
-        {exercise.requireVideo && (
+        {/* Video Recording and Upload - Only show if required or optional (OR) */}
+        {(exercise.requireVideo === 'required' || exercise.requireVideo === 'or') && (
           <div>
-            <VideoRecordUpload
-              videos={response.videos}
-              onVideosChange={(videos) => setResponse(prev => ({ ...prev, videos }))}
-              exerciseId={exercise.id}
-              exerciseTitle={exercise.title}
-              category="exercise-response"
-              responseType="video"
-              maxVideos={5}
-              maxSizePerVideo={100}
-              maxDurationSeconds={300}
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Video Upload *
+              {isCompleted && <span className="ml-2 text-sm text-gray-500 italic">(Read-only)</span>}
+            </label>
+            {!isCompleted ? (
+              <VideoRecordUpload
+                videos={response.videos}
+                onVideosChange={(videos) => setResponse(prev => ({ ...prev, videos }))}
+                exerciseId={exercise.id}
+                exerciseTitle={exercise.title}
+                category="exercise-response"
+                responseType="video"
+                maxVideos={5}
+                maxSizePerVideo={100}
+                maxDurationSeconds={300}
+              />
+            ) : (
+              response.videos.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-green-700">Uploaded Videos:</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {response.videos.map((video, index) => (
+                      <div key={index} className="bg-gray-100 p-3 rounded-md">
+                        <p className="text-sm font-medium">{video.name}</p>
+                        <p className="text-xs text-gray-500">Video uploaded</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            )}
           </div>
         )}
 
-        {/* Document Upload */}
-        {exercise.requireDocument && (
+        {/* Document Upload - Only show if required or optional (OR) */}
+        {(exercise.requireDocument === 'required' || exercise.requireDocument === 'or') && (
           <div>
-            <DocumentUpload
-              documents={response.documents}
-              onDocumentsChange={(documents) => {
-                // Deduplicate documents by S3 key
-                const uniqueDocuments = documents.filter((doc, index, arr) => 
-                  arr.findIndex(d => (d.s3Key || d.id) === (doc.s3Key || doc.id)) === index
-                );
-                setResponse(prev => ({ ...prev, documents: uniqueDocuments }));
-              }}
-              exerciseId={exercise.id}
-              exerciseTitle={exercise.title}
-              category="exercise-response"
-              maxDocuments={exercise.allowMultipleDocuments ? 5 : 1}
-              maxSizePerDocument={10}
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Document Upload *
+              {isCompleted && <span className="ml-2 text-sm text-gray-500 italic">(Read-only)</span>}
+            </label>
+            {!isCompleted ? (
+              <DocumentUpload
+                documents={response.documents}
+                onDocumentsChange={(documents) => {
+                  // Deduplicate documents by S3 key
+                  const uniqueDocuments = documents.filter((doc, index, arr) => 
+                    arr.findIndex(d => (d.s3Key || d.id) === (doc.s3Key || doc.id)) === index
+                  );
+                  setResponse(prev => ({ ...prev, documents: uniqueDocuments }));
+                }}
+                exerciseId={exercise.id}
+                exerciseTitle={exercise.title}
+                category="exercise-response"
+                maxDocuments={exercise.allowMultipleDocuments ? 5 : 1}
+                maxSizePerDocument={10}
+              />
+            ) : (
+              response.documents.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-green-700">Uploaded Documents:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {response.documents.map((document) => (
+                      <DocumentThumbnailWrapper
+                        key={document.id}
+                        document={document}
+                        showDownload={true}
+                        showRemove={false}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )
+            )}
           </div>
         )}
 
@@ -958,21 +1045,28 @@ export default function ExerciseResponseFormEnhanced({
                 requireDocument: exercise.requireDocument,
               };
               const currentResponse = {
-                responseText: response.responseText,
-                imageS3Keys: [...response.imageS3Keys, ...response.imageFiles.map(f => f.name)],
-                audioS3Key: response.audioS3Key || (response.audioFile ? 'pending' : ''),
-                videoS3Key: response.videoS3Keys[0] || (response.videos.length > 0 ? 'pending' : ''),
-                documentS3Keys: [...new Set([...response.documentS3Keys, ...response.documents.map(d => d.s3Key || d.id).filter(Boolean)])],
-                // Don't use existing status - let the progress be calculated based on current state
-                // status: existingResponse?.status,
+                textResponse: response.responseText,
+                imageUrls: [...response.imageS3Keys, ...response.imageFiles.map(f => f.name)],
+                audioUrl: response.audioS3Key || (response.audioFile ? 'pending' : ''),
+                videoUrl: response.videoS3Keys[0] || (response.videos.length > 0 ? 'pending' : ''),
+                documentUrls: [...new Set([...response.documentS3Keys, ...response.documents.map(d => d.s3Key || d.id).filter(Boolean)])],
               };
-              const progress = calculateExerciseProgress(requirements, currentResponse);
+              const progress = calculateExerciseProgress(requirements, currentResponse, existingResponse?.status);
 
-              // If exercise is completed, show read-only message
-              if (progress.state === 'completed') {
+              // Debug logging
+              console.log('Form Progress Debug:', {
+                requirements,
+                currentResponse,
+                progress,
+                canComplete: progress.canComplete,
+                missingRequirements: progress.missingRequirements
+              });
+
+              // If exercise is actually completed (saved status), show read-only message
+              if (existingResponse?.status === 'completed') {
                 return (
                   <div className="text-sm text-gray-500 italic">
-                    Exercise completed. View only.
+                    Assignment completed. View only.
                   </div>
                 );
               }
@@ -995,16 +1089,16 @@ export default function ExerciseResponseFormEnhanced({
                         ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
                         : 'bg-gray-400 cursor-not-allowed'
                     }`}
-                    title={!progress.canComplete 
-                      ? `Complete all required elements first. Missing: ${progress.missingRequirements.join(', ')}` 
-                      : 'Complete this exercise'
+                    title={progress.canComplete 
+                      ? 'Complete this assignment' 
+                      : `Complete all requirements first: ${progress.missingRequirements.join(', ')}`
                     }
                   >
                     {isLoading 
                       ? 'Processing...' 
                       : progress.canComplete
-                        ? 'Complete Exercise'
-                        : `Complete Exercise (${progress.completedRequirements}/${progress.totalRequirements})`
+                        ? 'Complete Assignment'
+                        : `Complete Assignment (${progress.completedRequirements}/${progress.totalRequirements})`
                     }
                   </button>
                 </>

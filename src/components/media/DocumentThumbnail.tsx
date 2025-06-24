@@ -6,7 +6,6 @@ import {
   Typography,
   Card,
   CardContent,
-  CardActionArea,
   Stack,
   Chip,
   IconButton,
@@ -119,11 +118,21 @@ export default function DocumentThumbnail({
           transform: 'translateY(-2px)',
         },
         transition: 'all 0.2s ease-in-out',
+        position: 'relative',
       }}
     >
-      <CardActionArea 
+      {/* Main clickable area */}
+      <Box
         onClick={handleClick}
-        sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+        sx={{
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          cursor: 'pointer',
+          '&:hover': {
+            bgcolor: 'action.hover',
+          },
+        }}
       >
         <CardContent 
           sx={{ 
@@ -177,41 +186,50 @@ export default function DocumentThumbnail({
               />
             )}
           </Stack>
-
-          {/* Action Buttons */}
-          <Stack direction="row" spacing={1}>
-            {showDownload && (
-              <IconButton
-                size="small"
-                onClick={handleDownload}
-                color="primary"
-                sx={{ 
-                  bgcolor: 'primary.main',
-                  color: 'white',
-                  '&:hover': { bgcolor: 'primary.dark' }
-                }}
-              >
-                <Download fontSize="small" />
-              </IconButton>
-            )}
-            
-            {showRemove && onRemove && (
-              <IconButton
-                size="small"
-                onClick={handleRemove}
-                color="error"
-                sx={{ 
-                  bgcolor: 'error.main',
-                  color: 'white',
-                  '&:hover': { bgcolor: 'error.dark' }
-                }}
-              >
-                <Delete fontSize="small" />
-              </IconButton>
-            )}
-          </Stack>
         </CardContent>
-      </CardActionArea>
+      </Box>
+
+      {/* Action Buttons - positioned outside main clickable area */}
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: 8,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          gap: 1,
+        }}
+      >
+        {showDownload && (
+          <IconButton
+            size="small"
+            onClick={handleDownload}
+            color="primary"
+            sx={{ 
+              bgcolor: 'primary.main',
+              color: 'white',
+              '&:hover': { bgcolor: 'primary.dark' }
+            }}
+          >
+            <Download fontSize="small" />
+          </IconButton>
+        )}
+        
+        {showRemove && onRemove && (
+          <IconButton
+            size="small"
+            onClick={handleRemove}
+            color="error"
+            sx={{ 
+              bgcolor: 'error.main',
+              color: 'white',
+              '&:hover': { bgcolor: 'error.dark' }
+            }}
+          >
+            <Delete fontSize="small" />
+          </IconButton>
+        )}
+      </Box>
     </Card>
   );
 } 
