@@ -22,11 +22,11 @@ interface Exercise {
   description: string;
   question: string;
   instructions?: string;
-  requireText: boolean;
-  requireImage: boolean;
-  requireAudio: boolean;
-  requireVideo: boolean;
-  requireDocument: boolean;
+  requireText: 'not_required' | 'required' | 'or';
+  requireImage: 'not_required' | 'required' | 'or';
+  requireAudio: 'not_required' | 'required' | 'or';
+  requireVideo: 'not_required' | 'required' | 'or';
+  requireDocument: 'not_required' | 'required' | 'or';
   textPrompt?: string;
   maxTextLength?: number;
   allowMultipleImages: boolean;
@@ -88,24 +88,56 @@ export default function ExerciseResponseForm({
   const validateRequiredFields = () => {
     const errors: string[] = [];
 
-    if (exercise.requireText && !response.responseText.trim()) {
+    // Helper functions to check if response types are provided
+    const hasText = response.responseText.trim().length > 0;
+    const hasImage = response.imageFiles.length > 0 || response.imageS3Keys.length > 0;
+    const hasAudio = response.audioFile || response.audioS3Key;
+    const hasVideo = response.videoFiles.length > 0 || response.videoS3Keys.length > 0;
+    const hasDocument = response.documentFiles.length > 0 || response.documentS3Keys.length > 0;
+
+    // Parse OR types from instructions (new method)
+    const orTypes = exercise.instructions?.match(/\[OR_TYPES:([^\]]+)\]/) 
+      ? exercise.instructions.match(/\[OR_TYPES:([^\]]+)\]/)![1].split(',')
+      : [];
+
+    // Check individual REQUIRED fields (not in OR group)
+    if (exercise.requireText === 'required' && !orTypes.includes('text') && !hasText) {
       errors.push('Text response is required');
     }
 
-    if (exercise.requireImage && response.imageFiles.length === 0 && response.imageS3Keys.length === 0) {
+    if (exercise.requireImage === 'required' && !orTypes.includes('image') && !hasImage) {
       errors.push('At least one image is required');
     }
 
-    if (exercise.requireAudio && !response.audioFile && !response.audioS3Key) {
+    if (exercise.requireAudio === 'required' && !orTypes.includes('audio') && !hasAudio) {
       errors.push('Audio recording is required');
     }
 
-    if (exercise.requireVideo && response.videoFiles.length === 0 && response.videoS3Keys.length === 0) {
+    if (exercise.requireVideo === 'required' && !orTypes.includes('video') && !hasVideo) {
       errors.push('Video recording is required');
     }
 
-    if (exercise.requireDocument && response.documentFiles.length === 0 && response.documentS3Keys.length === 0) {
+    if (exercise.requireDocument === 'required' && !orTypes.includes('document') && !hasDocument) {
       errors.push('At least one document is required');
+    }
+
+    // Check OR group requirements
+    if (orTypes.length > 0) {
+      const orSatisfied = orTypes.some(type => {
+        switch (type) {
+          case 'text': return hasText;
+          case 'image': return hasImage;
+          case 'audio': return hasAudio;
+          case 'video': return hasVideo;
+          case 'document': return hasDocument;
+          default: return false;
+        }
+      });
+
+      if (!orSatisfied) {
+        const orNames = orTypes.map(type => type.charAt(0).toUpperCase() + type.slice(1));
+        errors.push(`Please provide at least one: ${orNames.join(' OR ')}`);
+      }
     }
 
     return errors;

@@ -18,11 +18,11 @@ interface Exercise {
   category: string;
   question: string;
   instructions?: string;
-  requireText: boolean;
-  requireImage: boolean;
-  requireAudio: boolean;
-  requireVideo: boolean;
-  requireDocument: boolean;
+  requireText: 'not_required' | 'required' | 'or' | boolean;
+  requireImage: 'not_required' | 'required' | 'or' | boolean;
+  requireAudio: 'not_required' | 'required' | 'or' | boolean;
+  requireVideo: 'not_required' | 'required' | 'or' | boolean;
+  requireDocument: 'not_required' | 'required' | 'or' | boolean;
   textPrompt?: string;
   maxTextLength?: number;
   allowMultipleImages: boolean;
@@ -108,7 +108,7 @@ export default function ExerciseDetailPage() {
         
         for (const response of responsesWithImages) {
           if (response.imageS3Keys) {
-            imagesFromResponses.push(...response.imageS3Keys);
+            imagesFromResponses.push(...response.imageS3Keys.filter(key => key !== null));
             if (imagesFromResponses.length >= 6) break; // Show up to 6 recent images
           }
         }
@@ -210,14 +210,57 @@ export default function ExerciseDetailPage() {
     return colors[category] || 'bg-gray-100 text-gray-800';
   };
 
-  const getRequiredResponseTypes = (exercise: Exercise) => {
-    const types: string[] = [];
-    if (exercise.requireText) types.push('📝 Text');
-    if (exercise.requireImage) types.push('🖼️ Image');
-    if (exercise.requireAudio) types.push('🎵 Audio');
-    if (exercise.requireVideo) types.push('🎥 Video');
-    if (exercise.requireDocument) types.push('📄 Document');
-    return types;
+  const getAllResponseTypes = (exercise: Exercise) => {
+    const required: string[] = [];
+    const or: string[] = [];
+    const optional: string[] = [];
+
+    // Handle text
+    if (exercise.requireText === 'required' || exercise.requireText === true) {
+      required.push('📝 Text');
+    } else if (exercise.requireText === 'or') {
+      or.push('📝 Text');
+    } else if (exercise.requireText === 'not_required') {
+      optional.push('📝 Text');
+    }
+
+    // Handle image
+    if (exercise.requireImage === 'required' || exercise.requireImage === true) {
+      required.push('🖼️ Image');
+    } else if (exercise.requireImage === 'or') {
+      or.push('🖼️ Image');
+    } else if (exercise.requireImage === 'not_required') {
+      optional.push('🖼️ Image');
+    }
+
+    // Handle audio
+    if (exercise.requireAudio === 'required' || exercise.requireAudio === true) {
+      required.push('🎵 Audio');
+    } else if (exercise.requireAudio === 'or') {
+      or.push('🎵 Audio');
+    } else if (exercise.requireAudio === 'not_required') {
+      optional.push('🎵 Audio');
+    }
+
+    // Handle video
+    if (exercise.requireVideo === 'required' || exercise.requireVideo === true) {
+      required.push('🎥 Video');
+    } else if (exercise.requireVideo === 'or') {
+      or.push('🎥 Video');
+    } else if (exercise.requireVideo === 'not_required') {
+      optional.push('🎥 Video');
+    }
+
+    // Handle document
+    if (exercise.requireDocument === 'required' || exercise.requireDocument === true) {
+      required.push('📄 Document');
+    } else if (exercise.requireDocument === 'or') {
+      or.push('📄 Document');
+    } else if (exercise.requireDocument === 'not_required') {
+      optional.push('📄 Document');
+    }
+
+    return { required, or, optional };
   };
 
 
@@ -248,7 +291,7 @@ export default function ExerciseDetailPage() {
     );
   }
 
-  const requiredTypes = getRequiredResponseTypes(exercise);
+  const responseTypes = getAllResponseTypes(exercise);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -356,46 +399,99 @@ export default function ExerciseDetailPage() {
               </div>
             )}
 
-            {/* Required Response Types */}
+            {/* Response Types */}
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-3">Required Response Types</h2>
-              <div className="bg-yellow-50 p-4 rounded-md">
-                <p className="text-yellow-800 text-sm mb-3">
-                  To complete this exercise, you must provide the following types of responses:
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {requiredTypes.map((type, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-yellow-200 text-yellow-800 rounded-full text-sm font-medium"
-                    >
-                      {type}
-                    </span>
-                  ))}
-                </div>
-                {exercise.requireText && exercise.textPrompt && (
-                  <div className="mt-3 p-3 bg-white rounded border border-yellow-200">
-                    <p className="text-sm text-gray-700">
-                      <strong>Text Prompt:</strong> {exercise.textPrompt}
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">Response Requirements</h2>
+              <div className="space-y-4">
+                {/* Required Types */}
+                {responseTypes.required.length > 0 && (
+                  <div className="bg-red-50 p-4 rounded-md border border-red-200">
+                    <h3 className="text-sm font-medium text-red-900 mb-2">Required (Always Mandatory)</h3>
+                    <p className="text-red-800 text-sm mb-3">
+                      You must provide ALL of these response types:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {responseTypes.required.map((type, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-red-200 text-red-800 rounded-full text-sm font-medium"
+                        >
+                          {type}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* OR Types */}
+                {responseTypes.or.length > 0 && (
+                  <div className="bg-yellow-50 p-4 rounded-md border border-yellow-200">
+                    <h3 className="text-sm font-medium text-yellow-900 mb-2">OR Group (Choose At Least One)</h3>
+                    <p className="text-yellow-800 text-sm mb-3">
+                      You must provide AT LEAST ONE of these response types:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {responseTypes.or.map((type, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-yellow-200 text-yellow-800 rounded-full text-sm font-medium"
+                        >
+                          {type}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Optional Types */}
+                {responseTypes.optional.length > 0 && (
+                  <div className="bg-green-50 p-4 rounded-md border border-green-200">
+                    <h3 className="text-sm font-medium text-green-900 mb-2">Optional (Not Required)</h3>
+                    <p className="text-green-800 text-sm mb-3">
+                      These response types are optional - you can include them if you wish:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {responseTypes.optional.map((type, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-green-200 text-green-800 rounded-full text-sm font-medium"
+                        >
+                          {type}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Special Prompts/Settings */}
+                {((exercise.requireText === 'required' || exercise.requireText === 'or' || exercise.requireText === true) && exercise.textPrompt) && (
+                  <div className="bg-blue-50 p-4 rounded-md border border-blue-200">
+                    <h3 className="text-sm font-medium text-blue-900 mb-2">Text Response Prompt</h3>
+                    <p className="text-sm text-blue-800">
+                      <strong>Prompt:</strong> {exercise.textPrompt}
                     </p>
                     {exercise.maxTextLength && (
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-blue-600 mt-1">
                         Maximum {exercise.maxTextLength} characters
                       </p>
                     )}
                   </div>
                 )}
-                {exercise.requireImage && exercise.allowMultipleImages && (
-                  <div className="mt-3 p-3 bg-white rounded border border-yellow-200">
-                    <p className="text-sm text-gray-700">
-                      <strong>Image Upload:</strong> Multiple images allowed
+
+                {((exercise.requireImage === 'required' || exercise.requireImage === 'or' || exercise.requireImage === true) && exercise.allowMultipleImages) && (
+                  <div className="bg-blue-50 p-4 rounded-md border border-blue-200">
+                    <h3 className="text-sm font-medium text-blue-900 mb-2">Image Upload Settings</h3>
+                    <p className="text-sm text-blue-800">
+                      Multiple images allowed
                     </p>
                   </div>
                 )}
-                {exercise.requireDocument && exercise.allowMultipleDocuments && (
-                  <div className="mt-3 p-3 bg-white rounded border border-yellow-200">
-                    <p className="text-sm text-gray-700">
-                      <strong>Document Upload:</strong> Multiple documents allowed
+
+                {((exercise.requireDocument === 'required' || exercise.requireDocument === 'or' || exercise.requireDocument === true) && exercise.allowMultipleDocuments) && (
+                  <div className="bg-blue-50 p-4 rounded-md border border-blue-200">
+                    <h3 className="text-sm font-medium text-blue-900 mb-2">Document Upload Settings</h3>
+                    <p className="text-sm text-blue-800">
+                      Multiple documents allowed
                     </p>
                   </div>
                 )}

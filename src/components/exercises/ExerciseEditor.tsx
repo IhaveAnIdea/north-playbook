@@ -9,6 +9,17 @@ import type { Schema } from '../../../amplify/data/resource';
 
 const client = generateClient<Schema>();
 
+// Helper function to convert boolean values to enum values for backward compatibility
+const convertBooleanToEnum = (value: any): RequirementType => {
+  if (typeof value === 'boolean') {
+    return value ? 'required' : 'not_required';
+  }
+  if (typeof value === 'string' && ['not_required', 'required', 'or'].includes(value)) {
+    return value as RequirementType;
+  }
+  return 'not_required';
+};
+
 type RequirementType = 'not_required' | 'required' | 'or';
 
 interface ExerciseEditorProps {
@@ -84,11 +95,11 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel }: Exercis
           category: data.category || 'achievement_based_identity',
           question: data.question || '',
           instructions: data.instructions || '',
-          requireText: data.requireText ?? 'not_required',
-          requireImage: data.requireImage ?? 'not_required',
-          requireAudio: data.requireAudio ?? 'not_required',
-          requireVideo: data.requireVideo ?? 'not_required',
-          requireDocument: data.requireDocument ?? 'not_required',
+          requireText: convertBooleanToEnum(data.requireText) ?? 'not_required',
+          requireImage: convertBooleanToEnum(data.requireImage) ?? 'not_required',
+          requireAudio: convertBooleanToEnum(data.requireAudio) ?? 'not_required',
+          requireVideo: convertBooleanToEnum(data.requireVideo) ?? 'not_required',
+          requireDocument: convertBooleanToEnum(data.requireDocument) ?? 'not_required',
           textPrompt: data.textPrompt ?? '',
           maxTextLength: data.maxTextLength || null,
           allowMultipleImages: data.allowMultipleImages ?? false,
@@ -130,12 +141,39 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel }: Exercis
       setIsLoading(true);
       setError(null);
 
+      // Count OR and required types
+      const orTypes = [
+        exercise.requireText === 'or',
+        exercise.requireImage === 'or', 
+        exercise.requireAudio === 'or',
+        exercise.requireVideo === 'or',
+        exercise.requireDocument === 'or'
+      ].filter(Boolean).length;
+
+      const requiredTypes = [
+        exercise.requireText === 'required',
+        exercise.requireImage === 'required',
+        exercise.requireAudio === 'required', 
+        exercise.requireVideo === 'required',
+        exercise.requireDocument === 'required'
+      ].filter(Boolean).length;
+
+      // If only one OR type is selected, treat it as required
+      const finalExercise = { ...exercise };
+      if (orTypes === 1 && requiredTypes === 0) {
+        if (exercise.requireText === 'or') finalExercise.requireText = 'required';
+        if (exercise.requireImage === 'or') finalExercise.requireImage = 'required';
+        if (exercise.requireAudio === 'or') finalExercise.requireAudio = 'required';
+        if (exercise.requireVideo === 'or') finalExercise.requireVideo = 'required';
+        if (exercise.requireDocument === 'or') finalExercise.requireDocument = 'required';
+      }
+
       // Validate that at least one response type is required or OR
-      const hasRequiredType = exercise.requireText !== 'not_required' || 
-                             exercise.requireImage !== 'not_required' || 
-                             exercise.requireAudio !== 'not_required' || 
-                             exercise.requireVideo !== 'not_required' || 
-                             exercise.requireDocument !== 'not_required';
+      const hasRequiredType = finalExercise.requireText !== 'not_required' || 
+                             finalExercise.requireImage !== 'not_required' || 
+                             finalExercise.requireAudio !== 'not_required' || 
+                             finalExercise.requireVideo !== 'not_required' || 
+                             finalExercise.requireDocument !== 'not_required';
       
       if (!hasRequiredType) {
         setError('Please select at least one response type as required or OR.');
@@ -144,31 +182,33 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel }: Exercis
       }
 
       if (isEditing) {
-        // Update existing exercise
+        // Update existing exercise with enum values
         const updateData = {
-          title: exercise.title,
-          description: exercise.description,
-          category: exercise.category,
-          question: exercise.question,
-          instructions: exercise.instructions,
-          requireText: exercise.requireText,
-          requireImage: exercise.requireImage,
-          requireAudio: exercise.requireAudio,
-          requireVideo: exercise.requireVideo,
-          requireDocument: exercise.requireDocument,
-          textPrompt: exercise.textPrompt || null,
-          maxTextLength: exercise.maxTextLength,
-          allowMultipleImages: exercise.allowMultipleImages,
-          allowMultipleDocuments: exercise.allowMultipleDocuments,
-          allowEditingCompleted: exercise.allowEditingCompleted,
-          isActive: exercise.isActive,
+          title: finalExercise.title,
+          description: finalExercise.description,
+          category: finalExercise.category,
+          question: finalExercise.question,
+          instructions: finalExercise.instructions,
+          requireText: finalExercise.requireText,
+          requireImage: finalExercise.requireImage,
+          requireAudio: finalExercise.requireAudio,
+          requireVideo: finalExercise.requireVideo,
+          requireDocument: finalExercise.requireDocument,
+          textPrompt: finalExercise.textPrompt || null,
+          maxTextLength: finalExercise.maxTextLength,
+          allowMultipleImages: finalExercise.allowMultipleImages,
+          allowMultipleDocuments: finalExercise.allowMultipleDocuments,
+          allowEditingCompleted: finalExercise.allowEditingCompleted,
+          isActive: finalExercise.isActive,
         };
 
         try {
+          console.log('Updating exercise with data:', updateData);
           const updatedExercise = await client.models.Exercise.update({
             id: exerciseId,
             ...updateData,
           });
+          console.log('Exercise updated:', updatedExercise);
           onSave?.(updatedExercise);
         } catch (amplifyError) {
           console.warn('Amplify update failed, trying API route:', amplifyError);
@@ -187,29 +227,30 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel }: Exercis
           onSave?.(updatedExercise);
         }
       } else {
-        // Create new exercise
+        // Create new exercise with enum values
         try {
-          // Only send fields that exist in the current deployed schema
           const exerciseData = {
-            title: exercise.title,
-            description: exercise.description,
-            category: exercise.category,
-            question: exercise.question,
-            instructions: exercise.instructions,
-            requireText: exercise.requireText,
-            requireImage: exercise.requireImage,
-            requireAudio: exercise.requireAudio,
-            requireVideo: exercise.requireVideo,
-            requireDocument: exercise.requireDocument,
-            textPrompt: exercise.textPrompt,
-            maxTextLength: exercise.maxTextLength,
-            allowMultipleImages: exercise.allowMultipleImages,
-            allowMultipleDocuments: exercise.allowMultipleDocuments,
-            allowEditingCompleted: exercise.allowEditingCompleted,
-            isActive: exercise.isActive,
+            title: finalExercise.title,
+            description: finalExercise.description,
+            category: finalExercise.category,
+            question: finalExercise.question,
+            instructions: finalExercise.instructions,
+            requireText: finalExercise.requireText,
+            requireImage: finalExercise.requireImage,
+            requireAudio: finalExercise.requireAudio,
+            requireVideo: finalExercise.requireVideo,
+            requireDocument: finalExercise.requireDocument,
+            textPrompt: finalExercise.textPrompt,
+            maxTextLength: finalExercise.maxTextLength,
+            allowMultipleImages: finalExercise.allowMultipleImages,
+            allowMultipleDocuments: finalExercise.allowMultipleDocuments,
+            allowEditingCompleted: finalExercise.allowEditingCompleted,
+            isActive: finalExercise.isActive,
             createdBy: user?.userId || user?.username
           };
+          console.log('Creating exercise with data:', exerciseData);
           const newExercise = await client.models.Exercise.create(exerciseData);
+          console.log('Exercise created:', newExercise);
           onSave?.(newExercise);
         } catch (amplifyError) {
           console.warn('Amplify create failed, trying API route:', amplifyError);
@@ -217,7 +258,7 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel }: Exercis
           const response = await fetch('/api/exercises', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(exercise),
+            body: JSON.stringify(finalExercise),
           });
           
           if (!response.ok) {

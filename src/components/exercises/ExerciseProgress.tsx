@@ -27,6 +27,13 @@ export default function ExerciseProgress({
   const progress = calculateExerciseProgress(requirements, response);
   const stateInfo = getStateInfo(progress.state);
   const progressColor = getProgressColor(progress.percentageComplete);
+
+  // Safety check - if stateInfo is undefined, provide default
+  const safeStateInfo = stateInfo || {
+    text: 'Unknown',
+    color: 'text-gray-600',
+    icon: '❓'
+  };
   
   // Debug logging
   const bgColor = getProgressColorValue(progress.percentageComplete);
@@ -44,7 +51,7 @@ export default function ExerciseProgress({
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-gray-600">Progress</span>
-          <span className={`text-xs font-medium ${stateInfo.color}`}>
+          <span className={`text-xs font-medium ${safeStateInfo.color}`}>
             {progress.completedRequirements}/{progress.totalRequirements}
           </span>
         </div>
@@ -70,9 +77,9 @@ export default function ExerciseProgress({
       <div>
         <div className="flex justify-between items-center mb-1">
           <span className="text-sm font-medium text-gray-700">Progress</span>
-          <span className={`text-sm font-medium ${stateInfo.color} flex items-center space-x-1`}>
-            <span>{stateInfo.icon}</span>
-            <span>{stateInfo.text} ({progress.completedRequirements}/{progress.totalRequirements})</span>
+          <span className={`text-sm font-medium ${safeStateInfo.color} flex items-center space-x-1`}>
+            <span>{safeStateInfo.icon}</span>
+            <span>{safeStateInfo.text} ({progress.completedRequirements}/{progress.totalRequirements})</span>
           </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">

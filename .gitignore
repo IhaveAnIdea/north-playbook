@@ -49,3 +49,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Backup system
+backups/*.json
+!backups/.gitkeep
+environments/*.json
+!environments/.gitkeep
+
+# AWS credentials (never commit)
+.aws/
+aws-credentials.json

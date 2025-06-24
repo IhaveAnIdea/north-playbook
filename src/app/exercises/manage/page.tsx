@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { generateClient } from 'aws-amplify/api';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { useUserRole } from '@/hooks/useUserRole';
+
 import type { Schema } from '../../../../amplify/data/resource';
 
 const client = generateClient<Schema>();
@@ -15,13 +16,20 @@ interface Exercise {
   description?: string;
   category: string;
   question: string;
-  promptType: string;
+  instructions?: string;
+  promptType?: string; // Made optional for backward compatibility
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  // Required response types (supporting both new enum and legacy boolean)
+  requireText?: 'not_required' | 'required' | 'or' | boolean;
+  requireImage?: 'not_required' | 'required' | 'or' | boolean;
+  requireAudio?: 'not_required' | 'required' | 'or' | boolean;
+  requireVideo?: 'not_required' | 'required' | 'or' | boolean;
+  requireDocument?: 'not_required' | 'required' | 'or' | boolean;
 }
 
-type SortField = 'title' | 'category' | 'promptType' | 'isActive' | 'updatedAt';
+type SortField = 'title' | 'category' | 'responseTypes' | 'isActive' | 'updatedAt';
 type SortDirection = 'asc' | 'desc';
 
 export default function ExerciseManagePage() {
@@ -143,6 +151,53 @@ export default function ExerciseManagePage() {
     return displayNames[category] || category;
   };
 
+  const getResponseTypesDisplay = (exercise: Exercise) => {
+    const requiredTypes: string[] = [];
+    const orTypes: string[] = [];
+
+    // Type to emoji mapping
+    const typeEmojis: Record<string, string> = {
+      text: '📝',
+      image: '🖼️',
+      audio: '🎵',
+      video: '🎥',
+      document: '📄'
+    };
+
+    // Check each response type
+    const responseFields = [
+      { key: 'text', field: exercise.requireText },
+      { key: 'image', field: exercise.requireImage },
+      { key: 'audio', field: exercise.requireAudio },
+      { key: 'video', field: exercise.requireVideo },
+      { key: 'document', field: exercise.requireDocument }
+    ];
+
+    responseFields.forEach(({ key, field }) => {
+      // Handle new enum format
+      if (field === 'required') {
+        requiredTypes.push(typeEmojis[key]);
+      } else if (field === 'or') {
+        orTypes.push(typeEmojis[key]);
+      }
+      // Handle legacy boolean format for backward compatibility
+      else if (field === true) {
+        requiredTypes.push(typeEmojis[key]);
+      }
+    });
+
+    // Build display string
+    const parts = [];
+    if (requiredTypes.length > 0) {
+      parts.push(requiredTypes.join(' '));
+    }
+    if (orTypes.length > 0) {
+      parts.push(`(${orTypes.join(' OR ')})`);
+    }
+
+    return parts.length > 0 ? parts.join(' + ') : 'None';
+  };
+
   const sortedExercises = [...exercises].sort((a, b) => {
     let aValue: string | number;
     let bValue: string | number;
@@ -156,9 +211,9 @@ export default function ExerciseManagePage() {
         aValue = getCategoryDisplayName(a.category).toLowerCase();
         bValue = getCategoryDisplayName(b.category).toLowerCase();
         break;
-      case 'promptType':
-        aValue = a.promptType.toLowerCase();
-        bValue = b.promptType.toLowerCase();
+      case 'responseTypes':
+        aValue = getResponseTypesDisplay(a).toLowerCase();
+        bValue = getResponseTypesDisplay(b).toLowerCase();
         break;
       case 'isActive':
         aValue = a.isActive ? 1 : 0;
@@ -282,11 +337,11 @@ export default function ExerciseManagePage() {
                     </th>
                     <th 
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
-                      onClick={() => handleSort('promptType')}
+                      onClick={() => handleSort('responseTypes')}
                     >
                       <div className="flex items-center space-x-1">
-                        <span>Type</span>
-                        <span className="text-sm">{getSortIcon('promptType')}</span>
+                        <span>Required Types</span>
+                        <span className="text-sm">{getSortIcon('responseTypes')}</span>
                       </div>
                     </th>
                     <th 
@@ -332,7 +387,7 @@ export default function ExerciseManagePage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exercise.promptType}
+                        {getResponseTypesDisplay(exercise)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button

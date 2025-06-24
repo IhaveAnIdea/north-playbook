@@ -1,0 +1,2 @@
+# This file ensures the environments directory is tracked in git
+# Environment config files are ignored by .gitignore but this directory structure is preserved 

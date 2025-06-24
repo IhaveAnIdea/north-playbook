@@ -1,9 +1,9 @@
 {
   "auth": {
-    "user_pool_id": "us-west-2_CuI5aMxxs",
+    "user_pool_id": "us-west-2_LbHX01MfK",
     "aws_region": "us-west-2",
-    "user_pool_client_id": "5667f48u9jva7psgfd3tmgcglt",
-    "identity_pool_id": "us-west-2:78b5e81e-4fbf-44b2-9cf1-743131b89e70",
+    "user_pool_client_id": "7mjuoc18loapq02qlm41j683r0",
+    "identity_pool_id": "us-west-2:d03a1a5d-6350-4779-85b2-98880e584ba8",
     "mfa_methods": [],
     "standard_required_attributes": [
       "email",
@@ -28,7 +28,7 @@
     "unauthenticated_identities_enabled": true
   },
   "data": {
-    "url": "https://sjiumcqdpnethijqwrbqu47tm4.appsync-api.us-west-2.amazonaws.com/graphql",
+    "url": "https://ini62pdeszavvl2aqz3lt5s7mi.appsync-api.us-west-2.amazonaws.com/graphql",
     "aws_region": "us-west-2",
     "default_authorization_type": "AMAZON_COGNITO_USER_POOLS",
     "authorization_types": [
@@ -201,35 +201,45 @@
             "requireText": {
               "name": "requireText",
               "isArray": false,
-              "type": "Boolean",
+              "type": {
+                "enum": "ExerciseRequireText"
+              },
               "isRequired": false,
               "attributes": []
             },
             "requireImage": {
               "name": "requireImage",
               "isArray": false,
-              "type": "Boolean",
+              "type": {
+                "enum": "ExerciseRequireImage"
+              },
               "isRequired": false,
               "attributes": []
             },
             "requireAudio": {
               "name": "requireAudio",
               "isArray": false,
-              "type": "Boolean",
+              "type": {
+                "enum": "ExerciseRequireAudio"
+              },
               "isRequired": false,
               "attributes": []
             },
             "requireVideo": {
               "name": "requireVideo",
               "isArray": false,
-              "type": "Boolean",
+              "type": {
+                "enum": "ExerciseRequireVideo"
+              },
               "isRequired": false,
               "attributes": []
             },
             "requireDocument": {
               "name": "requireDocument",
               "isArray": false,
-              "type": "Boolean",
+              "type": {
+                "enum": "ExerciseRequireDocument"
+              },
               "isRequired": false,
               "attributes": []
             },
@@ -1483,6 +1493,46 @@
             "long_term_focus"
           ]
         },
+        "ExerciseRequireText": {
+          "name": "ExerciseRequireText",
+          "values": [
+            "not_required",
+            "required",
+            "or"
+          ]
+        },
+        "ExerciseRequireImage": {
+          "name": "ExerciseRequireImage",
+          "values": [
+            "not_required",
+            "required",
+            "or"
+          ]
+        },
+        "ExerciseRequireAudio": {
+          "name": "ExerciseRequireAudio",
+          "values": [
+            "not_required",
+            "required",
+            "or"
+          ]
+        },
+        "ExerciseRequireVideo": {
+          "name": "ExerciseRequireVideo",
+          "values": [
+            "not_required",
+            "required",
+            "or"
+          ]
+        },
+        "ExerciseRequireDocument": {
+          "name": "ExerciseRequireDocument",
+          "values": [
+            "not_required",
+            "required",
+            "or"
+          ]
+        },
         "ExerciseResponseStatus": {
           "name": "ExerciseResponseStatus",
           "values": [
@@ -1514,11 +1564,11 @@
   },
   "storage": {
     "aws_region": "us-west-2",
-    "bucket_name": "amplify-northplaybook-act-northplaybookstoragebuck-dmcyxceyplub",
+    "bucket_name": "amplify-northplaybook-act-northplaybookstoragebuck-ouoajajbasni",
     "buckets": [
       {
         "name": "north-playbook-storage",
-        "bucket_name": "amplify-northplaybook-act-northplaybookstoragebuck-dmcyxceyplub",
+        "bucket_name": "amplify-northplaybook-act-northplaybookstoragebuck-ouoajajbasni",
         "aws_region": "us-west-2",
         "paths": {
           "public/*": {

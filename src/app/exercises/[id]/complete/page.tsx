@@ -16,11 +16,11 @@ interface Exercise {
   description: string;
   question: string;
   instructions?: string;
-  requireText: boolean;
-  requireImage: boolean;
-  requireAudio: boolean;
-  requireVideo: boolean;
-  requireDocument: boolean;
+  requireText: 'not_required' | 'required' | 'or' | boolean;
+  requireImage: 'not_required' | 'required' | 'or' | boolean;
+  requireAudio: 'not_required' | 'required' | 'or' | boolean;
+  requireVideo: 'not_required' | 'required' | 'or' | boolean;
+  requireDocument: 'not_required' | 'required' | 'or' | boolean;
   textPrompt?: string;
   maxTextLength?: number;
   allowMultipleImages: boolean;

@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateClient } from 'aws-amplify/api';
 import { getCurrentUser } from 'aws-amplify/auth';
-import type { Schema } from '../../../amplify/data/resource';
+import { Amplify } from 'aws-amplify';
+import type { Schema } from '../../../../amplify/data/resource';
+import amplifyConfig from '../../../../amplify_outputs.json';
+
+// Configure Amplify for server-side usage
+Amplify.configure(amplifyConfig, { ssr: true });
 
 const client = generateClient<Schema>();
 
@@ -29,13 +34,45 @@ export async function POST(request: NextRequest) {
       return new NextResponse('Missing required fields: title, description, or question', { status: 400 });
     }
 
-    // Validate that at least one response type is required
-    const hasRequiredType = body.requireText || body.requireImage || 
-                           body.requireAudio || body.requireVideo || 
-                           body.requireDocument;
+    // Collect OR types to store in instructions field 
+    const orTypes = [];
+    if (body.requireText === 'or') orTypes.push('text');
+    if (body.requireImage === 'or') orTypes.push('image');
+    if (body.requireAudio === 'or') orTypes.push('audio');
+    if (body.requireVideo === 'or') orTypes.push('video');
+    if (body.requireDocument === 'or') orTypes.push('document');
+
+    // Handle single OR as required logic
+    let finalRequireText = body.requireText;
+    let finalRequireImage = body.requireImage;
+    let finalRequireAudio = body.requireAudio;
+    let finalRequireVideo = body.requireVideo;
+    let finalRequireDocument = body.requireDocument;
+
+    if (orTypes.length === 1) {
+      // Convert single OR to required
+      if (body.requireText === 'or') finalRequireText = 'required';
+      if (body.requireImage === 'or') finalRequireImage = 'required';
+      if (body.requireAudio === 'or') finalRequireAudio = 'required';
+      if (body.requireVideo === 'or') finalRequireVideo = 'required';
+      if (body.requireDocument === 'or') finalRequireDocument = 'required';
+    }
+
+    // Validate at least one requirement
+    const hasRequirement = finalRequireText !== 'not_required' || 
+                          finalRequireImage !== 'not_required' || 
+                          finalRequireAudio !== 'not_required' || 
+                          finalRequireVideo !== 'not_required' || 
+                          finalRequireDocument !== 'not_required';
     
-    if (!hasRequiredType) {
+    if (!hasRequirement) {
       return new NextResponse('At least one response type must be required', { status: 400 });
+    }
+
+    // Create enhanced instructions with OR logic embedded
+    let enhancedInstructions = body.instructions || '';
+    if (orTypes.length > 1) {
+      enhancedInstructions += `\n\n[OR_TYPES:${orTypes.join(',')}]`;
     }
 
     const newExercise = await client.models.Exercise.create({
@@ -43,18 +80,18 @@ export async function POST(request: NextRequest) {
       description: body.description,
       category: body.category,
       question: body.question,
-      instructions: body.instructions,
-      requireText: body.requireText || false,
-      requireImage: body.requireImage || false,
-      requireAudio: body.requireAudio || false,
-      requireVideo: body.requireVideo || false,
-      requireDocument: body.requireDocument || false,
+      instructions: enhancedInstructions,
+      requireText: finalRequireText,
+      requireImage: finalRequireImage,
+      requireAudio: finalRequireAudio,
+      requireVideo: finalRequireVideo,
+      requireDocument: finalRequireDocument,
       textPrompt: body.textPrompt || null,
       maxTextLength: body.maxTextLength || 1000,
       allowMultipleImages: body.allowMultipleImages || false,
       allowMultipleDocuments: body.allowMultipleDocuments || false,
       allowEditingCompleted: body.allowEditingCompleted || false,
-      isActive: body.isActive !== false, // Default to true unless explicitly false
+      isActive: body.isActive !== false,
     });
 
     return NextResponse.json(newExercise);
