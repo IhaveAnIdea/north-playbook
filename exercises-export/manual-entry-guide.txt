@@ -1,0 +1,279 @@
+MANUAL EXERCISE ENTRY GUIDE
+Generated: 2025-06-24T05:12:15.910Z
+Source: C:\Users\actwr\dev\north-playbook\exercises-export\csv-import-2025-06-24.json
+
+EXERCISE 1: What's Your Story?
+Category: self_awareness
+Question: How would you tell your story (up until now)? Who are you? Where did you come from? What do you want people to know about you?
+Instructions: You can use what you submitted with your application or revise it. Maximum of 300 words and no more than one (vertical) page.
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 2: Are You a Competitor?
+Category: achievement_based_identity
+Question: Do you consider yourself a competitor? Why or why not? What does it mean to you to compete?
+Instructions: Write short statements on how and why you are a competitor (min of 1
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 3: What's Your Style?
+Category: self_awareness
+Question: How do you move
+Instructions: operate
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 4: Your Soundtrack
+Category: creative_expression
+Question: What music readies you to perform
+Instructions: puts you in a higher state
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 5: Uncompromising Principles
+Category: purpose_based_identity
+Question: What are your uncompromising principles that will form the central tenets of your philosophy? What matters most to you? What will you stand for and defend?
+Instructions: Bullet point and list the 3-5 principles that shape your philosophy and/or how you operate in the world (more if you feel necessary). These can be expressed values, what you promise to yourself, and/or the traits most linked to your identity and self-esteem. (min 3; 10 max)
+
+As an example, Coach Carroll shared the fundamental principles on which his personal philosophy is based:
+• You're either competing or you're not
+• Relentless pursuit of a competitive edge
+• Do it better than it's ever been done
+• Uncommon consistency
+• Always compete
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 6: Quotations
+Category: meaning
+Question: What quotations inspire
+Instructions: empower
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 7: Personal Philosophy
+Category: purpose_based_identity
+Question: Can you boil down your personal philosophy into a mantra?
+Instructions: A single line or short statement under 10 words. For example
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 8: Your Inspiration
+Category: self_awareness
+Question: Who inspires you to be your best
+Instructions: to live fully
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 9: Grit
+Category: self_awareness
+Question: What is the definition of grit
+Instructions: according to Dr. Angela Duckworth. What are ways you exhibit grittiness? In what ways can you improve or strengthen grit?
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 10: Central Theme
+Category: self_awareness
+Question: If you were building your own pyramid (and you will)
+Instructions: what is the central theme of your philosophy?
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 11: How to Be a Great Teammate
+Category: self_awareness
+Question: What makes a great teammate?
+Instructions: List the virtues, skills, and traits you want in a teammate and how they are connected to higher performance for the team and organization. Minimum 5; maximum of 20.
+
+| What Makes a Great Teammate (virtue, trait, skill) | What are the benefits to the team/org? | How does one demonstrate that trait or virtue? | How can the team instill or cultivate that trait? |
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 12: What you Control
+Category: self_awareness
+Question: What do you control and don't control in life?
+Instructions: List the things you control and don't control in life, listed side-by-side in a table with one column labeled "What I Don't Control" and the other column labeled "What I Control." Minimum 10 of each; maximum of 25 (keep to one page).
+
+| What I Don't Control | What I Can Control |
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 13: Who Are You?
+Category: self_awareness
+Question: Who are you?
+Instructions: (in-class exercise) Pair up with a classmate and take turns with the following question and response. Student 1 asks Student 2: "Who are you?" and Student 2 answers in short answers: "I am ______." This continues for 60 seconds with Student 1 repeatedly asking "Who are you?" and Student 2 answering each time, "I am ______." Then switch roles and Student 2 asks Student 1. Each student will record an audio file of her/his live responses of "I am _____."
+
+For your Playbook assignment, submit the two audio files of your answers AND a transcripted file of your answers, separated into the two rounds (on one page), which will go into your playbook. If easier than transcribing, then you can submit a text file listing all of your answers in order by Round 1 and Round 2: "I am ______." "I am ________." for the full minute. For students who missed class, you can complete the assignment with one of your team members who was in class. They can provide instructions on the second round.
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 14: Big Questions
+Category: self_awareness
+Question: What are the big questions you ask yourself?
+Instructions: Traditional education teaches you to memorize the "right" answers. The Game is Life is about asking the questions, even if you don't have the answers. That's a practice for growth mindset.
+
+In preparation for our conversation with Deepak Chopra on March 6th, what are the big questions you ask yourself? The existential ones we ponder as humans and the ones specific to your life and dreams. Who am I? Why am I here? How can I create meaning? What connects us as humans? How can I be a better _______? What does God mean to me? Are we alone in the universe?
+
+For your playbook, submit 5-20 of the big questions you ask yourself or want to explore more. 1-page maximum. For inspiration and contemplation, Dean Soni recommends this reading.
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 15: Transcendence
+Category: self_awareness
+Question: What does transcendence mean to you?
+Instructions: Inspired by our talk with Deepak Chopra, write (or video record) your take-aways from the discussion and your thoughts and reflections on the common themes and intersections of spirituality, religion, and Coach's Win Forever principles. What does transcendence mean to you? Is there a relationship between transcendence, and striving, and high performance? Focusing on the work and process over the result. The "knowing" — who you are and that you are going to win. For those who were not in class (and those who were), you can also reflect on what transcendence means to you, what is sacred to you, and how, if at all, the principles learned in class impact you on a spiritual level.
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 16: Doubt the Doubt
+Category: self_awareness
+Question: What are your limiting beliefs that are preventing you from achieving what you want to achieve? What are the recurring negative thoughts that run through your mind? How can you improve your self-talk?
+Instructions: Reflect on the advice from Deepak
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 17: Gratitude
+Category: gratitude
+Question: Do you have a gratitude practice?
+Instructions: List the people and things you are grateful for in your life. Big things, small things, serious things, anything. Share as many or few as you wish, in a list, graphic, word cloud. No explanation needed, but whatever comes from your heart. Feel free to include photos or video of what makes you feel thankful.
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 18: Good Habits/Bad Habits
+Category: habit_formation
+Question: What is one positive new habit you want to establish and what is its frequency? What is a negative habit you want to curtail and to what limit or frequency?
+Instructions: What is one positive new habit you want to establish and what is its frequency? (Example: Drink 70 oz. of water daily). The behavior must be something you do not currently do.
+What is a negative habit you want to curtail and to what limit or frequency? Which habits are no longer serving you and need to be replaced? (Example: Spend no more than 30 minutes per day on social media)
+
+Behavior change occurs on three levels: results, systems, and identity. For your two listed habits, answer the following:
+• What end result do you want from creating or ending the habit?
+• What systems can you put in place to improve the odds of the desired behavior?
+• How would success reflect your identity?
+
+Example:
+Desired Habit: workout 5xs per week
+• Result: Become stronger, lose weight, longevity
+• System: Accountability partner, provide rewards for each workout; habit stacking (pairing a new habit with an existing habit)
+• Identity: I am an athlete. I am physically fit.
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 19: Redefining Success
+Category: goal_attainment
+Question: How do you define success and what specific metrics do you use to determine if you are on track towards your goals?
+Instructions: In your own words, how do you define success and what specific metrics do you use to determine if you are on track towards your goals? Is it based on effort, achievement, external recognition, rewards, challenging yourself, practice, showing up, personal growth? Does it include instances in which you showed bravery, resilience, kindness, selflessness, service to others, overcame fears, or realized something transformational? What is the importance of relationships to success? At this stage in life, how important are money and financial considerations? Be concise, clear, and honest. 1 page max.
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 20: Failure and Setback
+Category: goal_resilience
+Question: How do you define (or re-define) failure? Are you comfortable failing or afraid of failure or embarrassment?
+Instructions: How do you define (or re-define) failure? Are you comfortable failing or afraid of failure or embarrassment? Does failure add to or detract from your confidence? How do your feelings toward failure impact the likelihood you take risk and go outside your comfort zone? What is the relationship between failure and success? Discuss one of your most painful failures and what you learned from it. These are prompts, not requirements. Write your beliefs around failure and setback. Be concise, clear, and honest. 1 page max.
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 21: My Whys
+Category: self_awareness
+Question: What pushes you to grow and achieve?
+Instructions: What pushes you to grow and achieve? Do you have a larger purpose that drives you? Do you want to make your family proud? Is it to pay back the sacrifices of others who paved the way for you? Why do you want to be financially successful, mentally healthy, a provider, etc.? From where do you draw your intrinsic motivation? Write anything, but make sure to connect to it emotionally and feel it. Maximum of one page of text or a video recording of you explaining your "whys."
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 22: Vulnerability & Courage
+Category: vulnerability
+Question: Where do vulnerability and courage fit into your philosophy and the Win Forever framework?
+Instructions: Where do vulnerability and courage fit into your philosophy and the Win Forever framework, if at all? How do you view vulnerability and its connection to relationships, dealing with setbacks and doubt, expressing yourself, feeling safe, and/or being human. Watch the Brené Brown TED Talk on vulnerability and shame and write as little or as much as you want.
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 23: A Perfect Day
+Category: gratitude
+Question: Describe your perfect day
+Instructions: Describe (or bullet-point list or do a video or audio recording of) your perfect day: the things you would do; where you would be (setting); with whom; what you would eat; how it would feel; anything that can help you visualize that experience.
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 24: What Brings Me Joy
+Category: gratitude
+Question: What brings you joy?
+Instructions: List some of the things that bring you joy in life; without explanation or substantiation; (min 1 max 20)
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 25: What Do You Want?
+Category: self_awareness
+Question: What is your vision for your life?
+Instructions: What is your vision for your life? What are the most important things you want to experience, have, and achieve? What relationships are important to you and how will you prioritize them? Describe in as much detail as you feel is needed to give yourself clarity and create a vision. Lack of clarity leads to lack of focus. [video file of you discussing this]
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 26: Calm
+Category: mindfulness_practice
+Question: Confidence
+Instructions: Focus
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 27: What are you optimizing for?
+Category: self_awareness
+Question: For the next chapter of your life
+Instructions: what do you most want to achieve and are you aligning your strategy and actions with what you want to accomplish?
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 28: Setting Goals and Measuring Success
+Category: goal_attainment
+Question: What do you want to achieve in the next quarter/year?
+Instructions: What do you want to achieve in the next quarter/year? How will you measure success and hold yourself accountable in each aspect of your life (personal, health, professional, financial, etc.).
+
+| Category (personal, professional, health, relationships) | Stated Goal | Why I Want to Accomplish | By When? | *Specific Metrics to Measure Progress | What is the Next Best Step? | How much will it cost? | Who Can Hold Me Accountable? |
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 29: Your Pyramid
+Category: self_awareness
+Question: Using the information from class
+Instructions: create and design your own pyramid (or other shape) to Win Forever.",Using the information from class
+Text Response: REQUIRED
+
+--------------------------------------------------
+
+EXERCISE 30: Example: Coach Carroll's Three Rules (1) Protect the Team; (2) No whining
+Category: self_awareness
+Question: complaining
+Instructions: or excuses; (3) Be early.
+Culture,How do you learn and strengthen organizational culture?,[pending assignment to learn and strengthen organizational culture; to be posted]
+Regrets to Avoid,What larger regrets do you not want to have when you look back at your life?,List or state larger regrets you do not want to have when you look back at your life (min 3; max 10)
+How I Want to be Remembered,What qualities do you want your friends and family to think of you?,What qualities do you want your friends and family to think of you? What about you makes you YOU. What impact do you want to make?
+Bad Habits,What are the things that if you stopped doing in the next 12 months will make you a more effective person/leader?,What are the things that
+Text Response: REQUIRED
+
+--------------------------------------------------
+
