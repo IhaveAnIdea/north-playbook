@@ -25,6 +25,7 @@ interface DocumentUploadProps {
   category?: string;
   maxDocuments?: number;
   maxSizePerDocument?: number; // in MB
+  readOnly?: boolean;
 }
 
 export default function DocumentUpload({
@@ -34,7 +35,8 @@ export default function DocumentUpload({
   exerciseTitle,
   category,
   maxDocuments = 5,
-  maxSizePerDocument = 10
+  maxSizePerDocument = 10,
+  readOnly = false
 }: DocumentUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -143,44 +145,48 @@ export default function DocumentUpload({
   };
 
   const handleRemoveDocument = (documentId: string) => {
-    onDocumentsChange(documents.filter(doc => doc.id !== documentId));
+    if (!readOnly) {
+      onDocumentsChange(documents.filter(doc => doc.id !== documentId));
+    }
   };
 
   return (
     <Box>
-      {/* Upload Area */}
-      <Card sx={{ p: 3, mb: 2, border: '2px dashed', borderColor: 'grey.300' }}>
-        <Stack spacing={2} alignItems="center">
-          <CloudUpload sx={{ fontSize: 48, color: 'grey.400' }} />
-          <Typography variant="h6">Upload Documents</Typography>
-          <Typography variant="body2" color="text.secondary" textAlign="center">
-            Upload PDF, Word documents, or text files
-          </Typography>
+      {/* Upload Area - Only show if not read-only */}
+      {!readOnly && (
+        <Card sx={{ p: 3, mb: 2, border: '2px dashed', borderColor: 'grey.300' }}>
+          <Stack spacing={2} alignItems="center">
+            <CloudUpload sx={{ fontSize: 48, color: 'grey.400' }} />
+            <Typography variant="h6">Upload Documents</Typography>
+            <Typography variant="body2" color="text.secondary" textAlign="center">
+              Upload PDF, Word documents, or text files
+            </Typography>
 
-          <Button
-            variant="contained"
-            component="label"
-            disabled={uploading || documents.length >= maxDocuments}
-            startIcon={uploading ? <CircularProgress size={20} /> : <CloudUpload />}
-          >
-            {uploading ? 'Uploading...' : 'Choose Documents'}
-            <input
-              type="file"
-              hidden
-              multiple
-              accept=".pdf,.doc,.docx,.txt,.rtf,.odt"
-              onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
-            />
-          </Button>
+            <Button
+              variant="contained"
+              component="label"
+              disabled={uploading || documents.length >= maxDocuments}
+              startIcon={uploading ? <CircularProgress size={20} /> : <CloudUpload />}
+            >
+              {uploading ? 'Uploading...' : 'Choose Documents'}
+              <input
+                type="file"
+                hidden
+                multiple
+                accept=".pdf,.doc,.docx,.txt,.rtf,.odt"
+                onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
+              />
+            </Button>
 
-          <Typography variant="caption" color="text.secondary">
-            Maximum {maxDocuments} documents, {maxSizePerDocument}MB each
-          </Typography>
-        </Stack>
-      </Card>
+            <Typography variant="caption" color="text.secondary">
+              Maximum {maxDocuments} documents, {maxSizePerDocument}MB each
+            </Typography>
+          </Stack>
+        </Card>
+      )}
 
       {/* Error Display */}
-      {error && (
+      {error && !readOnly && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
           <pre style={{ whiteSpace: 'pre-wrap', margin: 0, fontFamily: 'inherit' }}>
             {error}
@@ -192,7 +198,7 @@ export default function DocumentUpload({
       {documents.length > 0 && (
         <Box>
           <Typography variant="subtitle1" gutterBottom>
-            Uploaded Documents ({documents.length})
+            {readOnly ? 'Uploaded Documents' : `Uploaded Documents (${documents.length})`}
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
             {documents.map((document) => (
@@ -200,8 +206,8 @@ export default function DocumentUpload({
                 key={document.id}
                 document={document}
                 showDownload={true}
-                showRemove={true}
-                onRemove={handleRemoveDocument}
+                showRemove={!readOnly}
+                onRemove={readOnly ? undefined : handleRemoveDocument}
               />
             ))}
           </Box>

@@ -31,6 +31,27 @@ export default function NewExercisePage() {
     }
   };
 
+  const handleSaveAndAddAnother = (exercise: unknown) => {
+    console.log('Exercise created for add another:', exercise);
+    
+    // Check if the response has errors
+    const response = exercise as { data?: unknown; errors?: Array<{ message: string }> };
+    if (response?.errors && response.errors.length > 0) {
+      console.error('Exercise creation failed with errors:', response.errors);
+      alert(`Exercise creation failed: ${response.errors.map(err => err.message).join(', ')}`);
+      return;
+    }
+    
+    if (response?.data || (exercise as { id?: string })?.id) {
+      console.log('Exercise created successfully! Ready for another.');
+      // Show success message but stay on the page
+      alert('Exercise created successfully! You can now create another exercise.');
+    } else {
+      console.error('Unexpected response format:', response);
+      alert('Exercise creation failed: Unexpected response format');
+    }
+  };
+
   const handleCancel = () => {
     router.push('/exercises');
   };
@@ -65,6 +86,7 @@ export default function NewExercisePage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <ExerciseEditor
         onSave={handleSave}
+        onSaveAndAddAnother={handleSaveAndAddAnother}
         onCancel={handleCancel}
       />
     </div>

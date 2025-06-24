@@ -26,6 +26,7 @@ interface ExerciseEditorProps {
   exerciseId?: string;
   onSave?: (exercise: unknown) => void;
   onCancel?: () => void;
+  onSaveAndAddAnother?: (exercise: unknown) => void;
 }
 
 interface MediaAsset {
@@ -36,7 +37,7 @@ interface MediaAsset {
   description?: string;
 }
 
-export default function ExerciseEditor({ exerciseId, onSave, onCancel }: ExerciseEditorProps) {
+export default function ExerciseEditor({ exerciseId, onSave, onCancel, onSaveAndAddAnother }: ExerciseEditorProps) {
   const { user, authStatus } = useAuthenticator((context) => [context.user, context.authStatus]);
   const { isAdmin } = useUserRole();
   const [exercise, setExercise] = useState<{
@@ -268,6 +269,145 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel }: Exercis
           
           const newExercise = await response.json();
           onSave?.(newExercise);
+        }
+      }
+    } catch (error) {
+      console.error('Error saving exercise:', error);
+      setError(`Failed to save exercise: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSaveAndAddAnother = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Count OR and required types
+      const orTypes = [
+        exercise.requireText === 'or',
+        exercise.requireImage === 'or', 
+        exercise.requireAudio === 'or',
+        exercise.requireVideo === 'or',
+        exercise.requireDocument === 'or'
+      ].filter(Boolean).length;
+
+      const requiredTypes = [
+        exercise.requireText === 'required',
+        exercise.requireImage === 'required',
+        exercise.requireAudio === 'required', 
+        exercise.requireVideo === 'required',
+        exercise.requireDocument === 'required'
+      ].filter(Boolean).length;
+
+      // If only one OR type is selected, treat it as required
+      const finalExercise = { ...exercise };
+      if (orTypes === 1 && requiredTypes === 0) {
+        if (exercise.requireText === 'or') finalExercise.requireText = 'required';
+        if (exercise.requireImage === 'or') finalExercise.requireImage = 'required';
+        if (exercise.requireAudio === 'or') finalExercise.requireAudio = 'required';
+        if (exercise.requireVideo === 'or') finalExercise.requireVideo = 'required';
+        if (exercise.requireDocument === 'or') finalExercise.requireDocument = 'required';
+      }
+
+      // Validate that at least one response type is required or OR
+      const hasRequiredType = finalExercise.requireText !== 'not_required' || 
+                             finalExercise.requireImage !== 'not_required' || 
+                             finalExercise.requireAudio !== 'not_required' || 
+                             finalExercise.requireVideo !== 'not_required' || 
+                             finalExercise.requireDocument !== 'not_required';
+      
+      if (!hasRequiredType) {
+        setError('Please select at least one response type as required or OR.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Create new exercise (only available for new exercises, not editing)
+      if (!isEditing) {
+        try {
+          const exerciseData = {
+            title: finalExercise.title,
+            description: finalExercise.description,
+            category: finalExercise.category,
+            question: finalExercise.question,
+            instructions: finalExercise.instructions,
+            requireText: finalExercise.requireText,
+            requireImage: finalExercise.requireImage,
+            requireAudio: finalExercise.requireAudio,
+            requireVideo: finalExercise.requireVideo,
+            requireDocument: finalExercise.requireDocument,
+            textPrompt: finalExercise.textPrompt,
+            maxTextLength: finalExercise.maxTextLength,
+            allowMultipleImages: finalExercise.allowMultipleImages,
+            allowMultipleDocuments: finalExercise.allowMultipleDocuments,
+            allowEditingCompleted: finalExercise.allowEditingCompleted,
+            isActive: finalExercise.isActive,
+            createdBy: user?.userId || user?.username
+          };
+          console.log('Creating exercise with data:', exerciseData);
+          const newExercise = await client.models.Exercise.create(exerciseData);
+          console.log('Exercise created:', newExercise);
+          
+          // Reset the form for a new exercise
+          setExercise({
+            title: '',
+            description: '',
+            category: 'achievement_based_identity',
+            question: '',
+            instructions: '',
+            requireText: 'not_required',
+            requireImage: 'not_required',
+            requireAudio: 'not_required',
+            requireVideo: 'not_required',
+            requireDocument: 'not_required',
+            textPrompt: '',
+            maxTextLength: null,
+            allowMultipleImages: false,
+            allowMultipleDocuments: false,
+            allowEditingCompleted: false,
+            isActive: true,
+          });
+          
+          onSaveAndAddAnother?.(newExercise);
+        } catch (amplifyError) {
+          console.warn('Amplify create failed, trying API route:', amplifyError);
+          // Fallback to API route
+          const response = await fetch('/api/exercises', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(finalExercise),
+          });
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`API create failed: ${response.status} - ${errorText}`);
+          }
+          
+          const newExercise = await response.json();
+          
+          // Reset the form for a new exercise
+          setExercise({
+            title: '',
+            description: '',
+            category: 'achievement_based_identity',
+            question: '',
+            instructions: '',
+            requireText: 'not_required',
+            requireImage: 'not_required',
+            requireAudio: 'not_required',
+            requireVideo: 'not_required',
+            requireDocument: 'not_required',
+            textPrompt: '',
+            maxTextLength: null,
+            allowMultipleImages: false,
+            allowMultipleDocuments: false,
+            allowEditingCompleted: false,
+            isActive: true,
+          });
+          
+          onSaveAndAddAnother?.(newExercise);
         }
       }
     } catch (error) {
@@ -911,6 +1051,16 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel }: Exercis
           >
             Cancel
           </button>
+          {/* Show "Create and Add Another" button only when creating new exercises */}
+          {!isEditing && (
+            <button
+              onClick={handleSaveAndAddAnother}
+              disabled={isLoading}
+              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
+            >
+              {isLoading ? 'Saving...' : 'Create and Add Another'}
+            </button>
+          )}
           <button
             onClick={handleSave}
             disabled={isLoading}

@@ -10,7 +10,6 @@ import VideoRecordUpload, { VideoData } from '@/components/media/VideoRecordUplo
 import AudioPlayerWrapper from '@/components/media/AudioPlayerWrapper';
 import DocumentUpload from '@/components/media/DocumentUpload';
 import { DocumentData } from '@/components/media/DocumentThumbnail';
-import DocumentThumbnailWrapper from '@/components/media/DocumentThumbnailWrapper';
 import RichTextEditor from '@/components/ui/RichTextEditor';
 import type { Schema } from '../../../amplify/data/resource';
 
@@ -969,39 +968,22 @@ export default function ExerciseResponseFormEnhanced({
               Document Upload *
               {isCompleted && <span className="ml-2 text-sm text-gray-500 italic">(Read-only)</span>}
             </label>
-            {!isCompleted ? (
-              <DocumentUpload
-                documents={response.documents}
-                onDocumentsChange={(documents) => {
-                  // Deduplicate documents by S3 key
-                  const uniqueDocuments = documents.filter((doc, index, arr) => 
-                    arr.findIndex(d => (d.s3Key || d.id) === (doc.s3Key || doc.id)) === index
-                  );
-                  setResponse(prev => ({ ...prev, documents: uniqueDocuments }));
-                }}
-                exerciseId={exercise.id}
-                exerciseTitle={exercise.title}
-                category="exercise-response"
-                maxDocuments={exercise.allowMultipleDocuments ? 5 : 1}
-                maxSizePerDocument={10}
-              />
-            ) : (
-              response.documents.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-green-700">Uploaded Documents:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {response.documents.map((document) => (
-                      <DocumentThumbnailWrapper
-                        key={document.id}
-                        document={document}
-                        showDownload={true}
-                        showRemove={false}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )
-            )}
+            <DocumentUpload
+              documents={response.documents}
+              onDocumentsChange={(documents) => {
+                // Deduplicate documents by S3 key
+                const uniqueDocuments = documents.filter((doc, index, arr) => 
+                  arr.findIndex(d => (d.s3Key || d.id) === (doc.s3Key || doc.id)) === index
+                );
+                setResponse(prev => ({ ...prev, documents: uniqueDocuments }));
+              }}
+              exerciseId={exercise.id}
+              exerciseTitle={exercise.title}
+              category="exercise-response"
+              maxDocuments={exercise.allowMultipleDocuments ? 5 : 1}
+              maxSizePerDocument={10}
+              readOnly={isCompleted}
+            />
           </div>
         )}
 
