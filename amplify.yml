@@ -4,7 +4,7 @@ backend:
     build:
       commands:
         - npm ci
-        - npx ampx generate outputs --app-id $AWS_APP_ID --branch $AWS_BRANCH --format json
+        - npx ampx sandbox --once --identifier $AWS_BRANCH-$AWS_APP_ID
 frontend:
   phases:
     preBuild:
