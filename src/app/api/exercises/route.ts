@@ -22,15 +22,25 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('🔄 Starting exercise creation...');
+    
     const user = await getCurrentUser();
     if (!user) {
+      console.error('❌ No authenticated user found');
       return new NextResponse('Unauthorized', { status: 401 });
     }
+    console.log('✅ User authenticated:', user.userId);
 
     const body = await request.json();
+    console.log('📥 Request body received:', body);
     
     // Validate required fields
     if (!body.title || !body.description || !body.question) {
+      console.error('❌ Missing required fields:', { 
+        title: !!body.title, 
+        description: !!body.description, 
+        question: !!body.question 
+      });
       return new NextResponse('Missing required fields: title, description, or question', { status: 400 });
     }
 
@@ -75,6 +85,19 @@ export async function POST(request: NextRequest) {
       enhancedInstructions += `\n\n[OR_TYPES:${orTypes.join(',')}]`;
     }
 
+    console.log('📝 Creating exercise with data:', {
+      title: body.title,
+      description: body.description,
+      category: body.category,
+      question: body.question,
+      instructions: enhancedInstructions,
+      requireText: finalRequireText,
+      requireImage: finalRequireImage,
+      requireAudio: finalRequireAudio,
+      requireVideo: finalRequireVideo,
+      requireDocument: finalRequireDocument,
+    });
+
     const newExercise = await client.models.Exercise.create({
       title: body.title,
       description: body.description,
@@ -94,9 +117,17 @@ export async function POST(request: NextRequest) {
       isActive: body.isActive !== false,
     });
 
+    console.log('✅ Exercise created successfully:', newExercise.data?.id);
     return NextResponse.json(newExercise);
   } catch (error) {
-    console.error('Error creating exercise:', error);
-    return new NextResponse('Failed to create exercise', { status: 500 });
+    console.error('💥 Error creating exercise:', error);
+    
+    // Enhanced error logging
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+    
+    return new NextResponse(`Failed to create exercise: ${error instanceof Error ? error.message : String(error)}`, { status: 500 });
   }
 } 
