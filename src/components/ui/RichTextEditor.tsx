@@ -81,7 +81,7 @@ export default function RichTextEditor({
             toolbar: 'undo redo | blocks | ' +
               'bold italic forecolor | alignleft aligncenter ' +
               'alignright alignjustify | bullist numlist outdent indent | ' +
-              'table link image | removeformat | help',
+              'table link image media | removeformat | help',
             table_toolbar: 'tableprops tabledelete | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol',
             table_appearance_options: true,
             table_grid: true,
@@ -117,6 +117,16 @@ export default function RichTextEditor({
               {title: 'Medium', value: 'img-medium'},
               {title: 'Large', value: 'img-large'},
             ],
+            // Video/Media configuration
+            media_live_embeds: true,
+            media_alt_source: false,
+            media_poster: false,
+            audio_template_callback: (data: any) => {
+              return `<audio controls style="width: 100%; margin: 1rem 0;"><source src="${data.source}"></audio>`;
+            },
+            video_template_callback: (data: any) => {
+              return `<video controls style="max-width: 100%; height: auto; border-radius: 8px; margin: 1rem 0;"><source src="${data.source}"></video>`;
+            },
             automatic_uploads: true,
             file_picker_types: 'image',
             file_picker_callback: (callback, value, meta) => {
@@ -284,6 +294,32 @@ export default function RichTextEditor({
                 display: table;
                 clear: both;
               }
+              /* Video styles */
+              video {
+                max-width: 100%;
+                height: auto;
+                border-radius: 0.375rem;
+                box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+                margin: 1rem 0;
+              }
+              /* Responsive video containers for embedded content */
+              .video-container {
+                position: relative;
+                padding-bottom: 56.25%; /* 16:9 aspect ratio */
+                height: 0;
+                overflow: hidden;
+                max-width: 100%;
+                border-radius: 0.375rem;
+                margin: 1rem 0;
+              }
+              .video-container iframe {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                border: 0;
+              }
             `,
             setup: (editor) => {
               editor.on('init', () => {
@@ -445,6 +481,42 @@ export default function RichTextEditor({
 
         .rich-text-content table.table-auto {
           table-layout: auto;
+        }
+
+        /* Video styles for rendered content */
+        .rich-text-content video {
+          max-width: 100%;
+          height: auto;
+          border-radius: 0.375rem;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+          margin: 1rem 0;
+        }
+
+        .rich-text-content iframe {
+          max-width: 100%;
+          border-radius: 0.375rem;
+          margin: 1rem 0;
+        }
+
+        /* Responsive video containers for rendered content */
+        .rich-text-content .video-container {
+          position: relative;
+          padding-bottom: 56.25%;
+          height: 0;
+          overflow: hidden;
+          max-width: 100%;
+          border-radius: 0.375rem;
+          margin: 1rem 0;
+        }
+
+        .rich-text-content .video-container iframe {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border: 0;
+          margin: 0;
         }
 
         .rich-text-content table.table-striped tbody tr:nth-child(even) {
