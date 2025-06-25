@@ -42,6 +42,27 @@ function PlaybookContent({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
+  // Helper function to get a user-friendly display name
+  const getUserDisplayName = () => {
+    if (!user) return 'Your';
+    
+    // Try to get email and use the part before @
+    const email = user.signInDetails?.loginId || user.attributes?.email;
+    if (email && email.includes('@')) {
+      const emailPrefix = email.split('@')[0];
+      // Capitalize first letter and make it more user-friendly
+      return emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1);
+    }
+    
+    // If username doesn't look like a UUID (contains hyphens), use it
+    if (user.username && !user.username.includes('-')) {
+      return user.username.charAt(0).toUpperCase() + user.username.slice(1);
+    }
+    
+    // Fall back to "Your"
+    return 'Your';
+  };
+
   // Fetch real playbook entries directly from Amplify
   useEffect(() => {
     fetchPlaybookEntries();
@@ -480,8 +501,8 @@ function PlaybookContent({
         {viewMode === 'magazine' ? (
           <BeautifulMagazine 
             sections={sections} 
-            userName={user?.signInDetails?.loginId || 'Your'} 
-            userDisplayName={user?.username}
+            userName={getUserDisplayName()} 
+            userDisplayName={getUserDisplayName()}
           />
         ) : viewMode === 'masonry' ? (
           <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
