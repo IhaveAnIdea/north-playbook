@@ -34,7 +34,7 @@ export default function Home() {
                 href="/exercises"
                 className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg"
               >
-                {isAdmin ? 'Manage Exercises' : 'Browse Exercises'}
+                {isAdmin ? 'Manage Assignments' : 'Browse Assignments'}
               </Link>
               {isAdmin ? (
                 <Link
@@ -72,7 +72,7 @@ export default function Home() {
             <div className="text-center p-8 rounded-lg bg-gray-50">
               <div className="text-4xl mb-4">📝</div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                {isAdmin ? 'Exercise Templates' : 'Personal Growth'}
+                {isAdmin ? 'Assignment Templates' : 'Personal Growth'}
               </h3>
               <p className="text-gray-600">
                 {isAdmin 

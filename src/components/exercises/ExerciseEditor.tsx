@@ -508,7 +508,7 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel, onSaveAnd
             onClick={onCancel}
             className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            Back to Exercises
+            Back to Assignments
           </button>
         </div>
       </div>
@@ -519,7 +519,7 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel, onSaveAnd
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">
-          {isEditing ? 'Edit Exercise Template' : 'Create New Exercise Template'}
+          {isEditing ? 'Edit Assignment Template' : 'Create New Assignment Template'}
         </h1>
         <p className="text-gray-600 mt-2">
           {isEditing 
@@ -956,7 +956,7 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel, onSaveAnd
             <option value="inactive">Inactive</option>
           </select>
           <p className="text-sm text-gray-500 mt-1">
-            Inactive exercises are hidden from users
+            Inactive assignments are hidden from users
           </p>
         </div>
 
@@ -972,10 +972,10 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel, onSaveAnd
               onChange={(e) => setExercise(prev => ({ ...prev, allowEditingCompleted: e.target.checked }))}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <span className="ml-2 text-sm text-gray-700">Allow users to edit completed exercises</span>
+            <span className="ml-2 text-sm text-gray-700">Allow users to edit completed assignments</span>
           </label>
           <p className="text-sm text-gray-500 mt-1">
-            When enabled, users can continue editing their responses even after completing the exercise
+            When enabled, users can continue editing their responses even after completing the assignment
           </p>
         </div>
 
@@ -984,7 +984,7 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel, onSaveAnd
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-4">Template Media Assets</h3>
             <p className="text-sm text-gray-600 mb-4">
-              These are template assets shown to users as part of the exercise instructions (not user responses).
+              These are template assets shown to users as part of the assignment instructions (not user responses).
             </p>
             
             {/* File Upload */}
@@ -1066,7 +1066,7 @@ export default function ExerciseEditor({ exerciseId, onSave, onCancel, onSaveAnd
             disabled={isLoading}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
           >
-            {isLoading ? 'Saving...' : (isEditing ? 'Update Exercise' : 'Create Exercise')}
+            {isLoading ? 'Saving...' : (isEditing ? 'Update Assignment' : 'Create Assignment')}
           </button>
         </div>
       </div>

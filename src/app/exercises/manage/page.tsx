@@ -250,12 +250,12 @@ export default function ExerciseManagePage() {
         <div className="text-center">
           <div className="text-6xl mb-4">🔒</div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Admin Access Required</h2>
-          <p className="text-gray-600 mb-6">Only administrators can manage exercise templates.</p>
+          <p className="text-gray-600 mb-6">Only administrators can manage assignment templates.</p>
           <Link
             href="/exercises"
             className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            Back to Exercises
+            Back to Assignments
           </Link>
         </div>
       </div>
@@ -269,16 +269,16 @@ export default function ExerciseManagePage() {
         <div className="mb-8">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Exercise Management</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Assignment Management</h1>
               <p className="text-gray-600 mt-2">
-                Create and manage exercise templates for all users
+                Create and manage assignment templates for all users
               </p>
             </div>
             <Link
               href="/exercises/new"
               className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              Create New Exercise
+              Create New Assignment
             </Link>
           </div>
         </div>
@@ -298,19 +298,19 @@ export default function ExerciseManagePage() {
         ) : exercises.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">📝</div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No exercises created yet</h3>
-            <p className="text-gray-600 mb-6">Create your first exercise template to get started</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No assignments created yet</h3>
+            <p className="text-gray-600 mb-6">Create your first assignment template to get started</p>
             <Link
               href="/exercises/new"
               className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              Create First Exercise
+              Create First Assignment
             </Link>
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900">Exercise Templates</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Assignment Templates</h2>
             </div>
             
             <div className="overflow-x-auto">
@@ -322,7 +322,7 @@ export default function ExerciseManagePage() {
                       onClick={() => handleSort('title')}
                     >
                       <div className="flex items-center space-x-1">
-                        <span>Exercise</span>
+                        <span>Assignment</span>
                         <span className="text-sm">{getSortIcon('title')}</span>
                       </div>
                     </th>

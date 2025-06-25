@@ -377,12 +377,12 @@ export default function ExercisesPage() {
             <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
-                  {activeTab === 'participate' ? 'My Exercises' : 'Exercise Templates'}
+                  {activeTab === 'participate' ? 'My Assignments' : 'Assignment Templates'}
                 </h1>
                 <p className="text-gray-600 mt-2">
                   {activeTab === 'participate' 
                     ? 'Track your progress and continue your personal development journey'
-                    : 'Manage exercise templates and configurations'
+                    : 'Manage assignment templates and configurations'
                   }
                 </p>
               </div>
@@ -414,7 +414,7 @@ export default function ExercisesPage() {
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  🏃‍♂️ Participate in Exercises
+                  🏃‍♂️ Participate in Assignments
                 </button>
                 <button
                   onClick={() => setActiveTab('manage')}
@@ -479,12 +479,12 @@ export default function ExercisesPage() {
                 </div>
               </div>
 
-              {/* Exercises Grid for Participation */}
+              {/* Assignments Grid for Participation */}
               {exercisesWithStatus.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="text-6xl mb-4">📝</div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No exercises available yet</h3>
-                  <p className="text-gray-600 mb-6">Check back soon for new exercises!</p>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No assignments available yet</h3>
+                  <p className="text-gray-600 mb-6">Check back soon for new assignments!</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -747,7 +747,7 @@ export default function ExercisesPage() {
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Exercises</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Assignments</h1>
               <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">
                 Track your progress and continue your personal development journey
               </p>
@@ -803,12 +803,12 @@ export default function ExercisesPage() {
           </div>
         </div>
 
-        {/* Exercises Grid */}
+        {/* Assignments Grid */}
         {exercisesWithStatus.length === 0 ? (
           <div className="text-center py-8 sm:py-12">
             <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">📝</div>
-            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No exercises available yet</h3>
-            <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">Check back soon for new exercises!</p>
+            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No assignments available yet</h3>
+            <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">Check back soon for new assignments!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">

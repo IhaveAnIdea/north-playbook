@@ -116,7 +116,7 @@ export default function ExerciseResponsesPage() {
             href="/exercises"
             className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            Back to Exercises
+            Back to Assignments
           </Link>
         </div>
       </div>
@@ -171,7 +171,7 @@ export default function ExerciseResponsesPage() {
               href="/exercises"
               className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 text-center font-medium text-sm transition-colors touch-manipulation"
             >
-              Back to Exercises
+              Back to Assignments
             </Link>
           </div>
         </div>

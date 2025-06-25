@@ -261,7 +261,7 @@ function PlaybookContent({
                 href="/exercises"
                 className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors"
               >
-                Complete Exercises
+                Complete Assignments
               </a>
             </div>
           </div>
@@ -330,7 +330,7 @@ function PlaybookContent({
                 }}
                 className="bg-white text-gray-700 px-8 py-4 rounded-xl font-semibold border-2 border-gray-200 hover:border-gray-300 transition-all"
               >
-                Import Completed Exercises
+                Import Completed Assignments
               </button>
             </div>
           </div>

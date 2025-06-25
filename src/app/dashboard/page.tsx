@@ -134,7 +134,7 @@ export default function Dashboard() {
                   0
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  Exercises Completed
+                  Assignments Completed
                 </Typography>
               </CardContent>
             </Card>

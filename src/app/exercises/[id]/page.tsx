@@ -284,7 +284,7 @@ export default function ExerciseDetailPage() {
             href="/exercises"
             className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            Back to Exercises
+            Back to Assignments
           </Link>
         </div>
       </div>

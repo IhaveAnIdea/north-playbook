@@ -85,7 +85,7 @@ export default function BeautifulMagazine({ sections, userName = 'Your', userDis
       const totalInsights = journeyData.allInsights.length;
       const totalThemes = journeyData.keyThemes.length;
       
-      pdf.text(`${totalEntries} Exercises Completed`, pageWidth / 2, 120, { align: 'center' });
+      pdf.text(`${totalEntries} Assignments Completed`, pageWidth / 2, 120, { align: 'center' });
       pdf.text(`${totalInsights} Insights Gained`, pageWidth / 2, 135, { align: 'center' });
       pdf.text(`${totalThemes} Growth Areas Explored`, pageWidth / 2, 150, { align: 'center' });
       

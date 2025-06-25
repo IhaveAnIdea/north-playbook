@@ -290,7 +290,7 @@ export default function ProfilePage() {
                   <Stack spacing={2}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Typography variant="body2" color="text.secondary">
-                        Exercises Completed
+                        Assignments Completed
                       </Typography>
                       <Typography variant="h6" color="primary.main">
                         {stats.exercisesCompleted}
@@ -357,7 +357,7 @@ export default function ProfilePage() {
                   </Typography>
                   <Stack spacing={2}>
                     <Button variant="outlined" fullWidth href="/exercises">
-                      Start New Exercise
+                      Start New Assignment
                     </Button>
                     <Button variant="outlined" fullWidth href="/playbook">
                       View My Playbook

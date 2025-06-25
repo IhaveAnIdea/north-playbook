@@ -66,7 +66,7 @@ export default function Navbar() {
   // Base navigation items for all users
   const baseNavigationItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
-    { text: 'Exercises', icon: <Assignment />, path: '/exercises' },
+    { text: 'Assignments', icon: <Assignment />, path: '/exercises' },
     { text: 'My Playbook', icon: <LibraryBooks />, path: '/playbook' },
     { text: 'Settings', icon: <Settings />, path: '/settings' },
   ];
@@ -74,7 +74,7 @@ export default function Navbar() {
   // Admin-only navigation items
   const adminNavigationItems = [
     { text: 'Admin Panel', icon: <AdminPanelSettings />, path: '/admin' },
-    { text: 'Manage Exercises', icon: <Assignment />, path: '/exercises/manage' },
+    { text: 'Manage Assignments', icon: <Assignment />, path: '/exercises/manage' },
   ];
 
   // Combine navigation items based on user role
